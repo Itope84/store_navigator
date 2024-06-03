@@ -67,24 +67,22 @@ ThemeData createTheme() {
           letterSpacing: 0.25,
         ),
       ),
-      titleLarge: GoogleFonts.manrope(
+      titleLarge: GoogleFonts.lexend(
         textStyle: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
         ),
       ),
-      titleMedium: GoogleFonts.manrope(
+      titleMedium: GoogleFonts.lexend(
         textStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
         ),
       ),
-      titleSmall: GoogleFonts.manrope(
+      titleSmall: GoogleFonts.lexend(
         textStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          letterSpacing: 0.25,
         ),
       ),
       labelLarge: GoogleFonts.manrope(
