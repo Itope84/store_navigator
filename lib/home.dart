@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:store_navigator/utils/icons.dart';
 import 'package:store_navigator/widgets/pending_trip.dart';
+import 'package:store_navigator/zoomable_map.dart';
 
 // TODO: style as in figma
 class HomeScreen extends StatelessWidget {
@@ -107,7 +108,23 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        // TODO: icons
+        currentIndex: 0,
+        onTap: (int index) {
+          switch (index) {
+            case 0:
+              break;
+            case 1:
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => ZoomableMap(),
+                ),
+              );
+              break;
+            case 2:
+              // navigate to account
+              break;
+          }
+        },
         items: [
           BottomNavigationBarItem(
             icon: CustomIcons.home(color: Theme.of(context).primaryColor),

@@ -51,9 +51,9 @@ class ZoomableMapPainter extends CustomPainter {
 }
 
 class ZoomableMap extends StatefulWidget {
-  final String assetName;
+  final String assetName = 'assets/floor_plan.svg';
 
-  ZoomableMap({Key? key, required this.assetName}) : super(key: key);
+  ZoomableMap({Key? key}) : super(key: key);
 
   @override
   _ZoomableMapState createState() => _ZoomableMapState();
@@ -88,6 +88,7 @@ class _ZoomableMapState extends State<ZoomableMap> {
   Future<void> _loadSvg() async {
     final loader = DefaultAssetBundle.of(context);
     final svgString = await loader.loadString(widget.assetName);
+
     final pictureInfo = await vg.loadPicture(SvgStringLoader(svgString), null);
     setState(() {
       picture = pictureInfo;
