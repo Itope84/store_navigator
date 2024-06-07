@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:store_navigator/utils/icons.dart';
 import 'package:store_navigator/widgets/pending_trip.dart';
 
 // TODO: style as in figma
@@ -58,29 +59,47 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            PendingTrip(),
+
+            ShoppingTripCard(
+              isMainCard: true,
+            ),
             // horizontal listview with height of 200
             Container(
               height: 160,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  PendingTrip(),
-                  PendingTrip(),
+                  Container(
+                    width: 200,
+                    child: ShoppingTripCard(),
+                  ),
+                  Container(
+                    width: 200,
+                    child: ShoppingTripCard(),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 40),
+
             Text('Past Shopping Trips',
                 style: Theme.of(context).textTheme.titleLarge),
+
+            const SizedBox(height: 10),
 
             Container(
               height: 160,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  PendingTrip(),
-                  PendingTrip(),
+                  Container(
+                    width: 200,
+                    child: ShoppingTripCard(),
+                  ),
+                  Container(
+                    width: 200,
+                    child: ShoppingTripCard(),
+                  ),
                 ],
               ),
             ),
@@ -89,13 +108,18 @@ class HomeScreen extends StatelessWidget {
       ),
       bottomNavigationBar: BottomNavigationBar(
         // TODO: icons
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: CustomIcons.home(color: Theme.of(context).primaryColor),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
+            icon: CustomIcons.list(
+              // default color of bottom nav icon
+              color: Theme.of(context)
+                  .bottomNavigationBarTheme
+                  .unselectedItemColor,
+            ),
             label: 'Shopping Lists',
           ),
           BottomNavigationBarItem(

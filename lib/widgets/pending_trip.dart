@@ -1,8 +1,11 @@
-// PendingTrip widget
-
 import 'package:flutter/material.dart';
+import 'package:store_navigator/utils/icons.dart';
 
-class PendingTrip extends StatelessWidget {
+class ShoppingTripCard extends StatelessWidget {
+  const ShoppingTripCard({Key? key, this.isMainCard = false}) : super(key: key);
+
+  final bool isMainCard;
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -11,45 +14,52 @@ class PendingTrip extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Container(
-          // TODO: deoends on whether or not it;s the main or smaller card
-          // height: 160,
-          // TODO: width: ,
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // A row with two text widgets, the first one is bold
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'Shopping trip to Walmart',
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  // A text widget with the text 'Today'
-                  Text(
-                    'Today',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  CustomIcons.store(size: 24),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'Tesco Woolwich Arsenal',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  )
                 ],
               ),
-              const SizedBox(height: 10),
-              // A row with two text widgets, the first one is bold
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Total items: 10',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  // A text widget with the text 'View'
-                  Text(
-                    'View',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
+
+              const SizedBox(height: 16),
+
+              Text(
+                'Morrisons british chicken thighs, Morrisons british chicken thighs,  and 12 more.',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
+
+              const SizedBox(height: 16),
+
+              if (isMainCard)
+                Row(
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => {},
+                      child: const Text('Edit List'),
+                    ),
+                    SizedBox(width: 12),
+                    FilledButton(
+                      onPressed: () => {},
+                      child: const Text('Navigate'),
+                    ),
+                  ],
+                )
             ],
           ),
         ));
