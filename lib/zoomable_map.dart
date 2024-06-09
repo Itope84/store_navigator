@@ -1,6 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:store_navigator/utils/floorplan_to_grid.dart';
+import 'package:xml/xml.dart';
 
 class ZoomableMapPainter extends CustomPainter {
   final PictureInfo picture;
@@ -61,6 +65,11 @@ class ZoomableMap extends StatefulWidget {
 
 class _ZoomableMapState extends State<ZoomableMap> {
   PictureInfo? picture;
+
+  late SvgToGridConverter converter;
+
+  late Grid grid;
+
   double scale = 1.0;
   Offset offset = Offset.zero;
   List<Offset> items = [];
@@ -90,9 +99,86 @@ class _ZoomableMapState extends State<ZoomableMap> {
     final svgString = await loader.loadString(widget.assetName);
 
     final pictureInfo = await vg.loadPicture(SvgStringLoader(svgString), null);
+
+    final document = XmlDocument.parse(svgString);
     setState(() {
       picture = pictureInfo;
+      converter = SvgToGridConverter(document, (pictureInfo.size.width).ceil(),
+          (pictureInfo.size.height).ceil());
+      grid = generateGrid(svgString);
     });
+
+    print(_getSectionOpenSideMidpoint('section_92'));
+  }
+
+  Grid generateGrid(String svgString) {
+    final startTime = DateTime.now();
+    final grid = converter.parseSvg();
+
+    final endTime = DateTime.now();
+    final elapsedTime = endTime.difference(startTime);
+
+    print('Time taken: ${elapsedTime.inMilliseconds} ms');
+
+    // Print the grid
+    // final str = grid.cells
+    //     .map((row) => row.map((cell) => cell ? ' ' : 'X').join(' '))
+    //     .join('\n');
+    // log(str);
+
+    return grid;
+  }
+
+  Rect _getSectionRect(String sectionId) {
+    final section = converter.paths[sectionId];
+
+    return section?.getBounds() ?? Rect.zero;
+  }
+
+  Rect _getSectionRectWithPadding(String sectionId) {
+    final sectionRect = _getSectionRect(sectionId);
+
+    return Rect.fromLTRB(sectionRect.left - 5, sectionRect.top - 5,
+        sectionRect.right + 5, sectionRect.bottom + 5);
+  }
+
+  Offset _getSectionCenter(String sectionId) {
+    final sectionRect = _getSectionRect(sectionId);
+
+    return Offset(sectionRect.left + sectionRect.width / 2,
+        sectionRect.top + sectionRect.height / 2);
+  }
+
+  Offset _getSectionOpenSideMidpoint(String sectionId) {
+    // The open midpoint of the open side of the section is the walkable point closest to the center of the section
+
+    final sectionRect = _getSectionRectWithPadding(sectionId);
+
+    final midpoint = Offset(sectionRect.left + sectionRect.width / 2,
+        sectionRect.top + sectionRect.height / 2);
+
+    // Check the four sides of the section, find the midpoint of each side (the side is the 5px padding around the section), if it is not walkable, skip it; otherwise, sort by distance to the midpoint and return the closest one
+    final sideMidpoints = [
+      Offset(sectionRect.left, sectionRect.top + sectionRect.height / 2),
+      Offset(sectionRect.right, sectionRect.top + sectionRect.height / 2),
+      Offset(sectionRect.left + sectionRect.width / 2, sectionRect.top),
+      Offset(sectionRect.left + sectionRect.width / 2, sectionRect.bottom)
+    ];
+
+    final walkableSideMidpoints = sideMidpoints
+        .where((point) => grid.isWalkable(point.dx.ceil(), point.dy.ceil()))
+        .toList();
+
+    walkableSideMidpoints.sort((a, b) => (a - midpoint)
+        .distanceSquared
+        .compareTo((b - midpoint).distanceSquared));
+
+    // TODO: remove
+    setState(() {
+      items.add(walkableSideMidpoints.first);
+    });
+
+    return walkableSideMidpoints.first;
   }
 
   void _onTapUp(TapUpDetails details) {
