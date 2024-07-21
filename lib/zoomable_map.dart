@@ -1,8 +1,10 @@
 import 'dart:developer';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:store_navigator/utils/api/route.dart';
 import 'package:store_navigator/utils/floorplan_to_grid.dart';
 import 'package:xml/xml.dart';
 
@@ -23,6 +25,8 @@ class ZoomableMapPainter extends CustomPainter {
 
     canvas.scale(initialScale);
 
+    print(this.route);
+
     // Draw the SVG
     canvas.drawPicture(picture.picture);
 
@@ -35,9 +39,10 @@ class ZoomableMapPainter extends CustomPainter {
     // TODO: Draw route. A possibly complex algorithm to draw the route between items
     if (route.isNotEmpty) {
       Paint routePaint = Paint()
-        ..color = Colors.blue
+        ..color = Colors.red
         ..strokeWidth = 5.0 / initialScale
         ..style = PaintingStyle.stroke;
+
       Path path = Path()..moveTo(route[0].dx, route[0].dy);
       for (var point in route.skip(1)) {
         path.lineTo(point.dx, point.dy);
@@ -63,6 +68,9 @@ class ZoomableMap extends StatefulWidget {
   _ZoomableMapState createState() => _ZoomableMapState();
 }
 
+// define enum start | end
+enum Position { start, end }
+
 class _ZoomableMapState extends State<ZoomableMap> {
   PictureInfo? picture;
 
@@ -75,10 +83,17 @@ class _ZoomableMapState extends State<ZoomableMap> {
   List<Offset> items = [];
   List<Offset> route = [];
 
+  // tuple (start, end) positions
+  (Offset?, Offset?) positions = (null, null);
+
+  // Position lastTapped = Position.start;
+
   @override
   void initState() {
     super.initState();
     _loadSvg();
+
+    _getRoute();
   }
 
   final MAP_SCREEN_RATIO = 0.7;
@@ -100,31 +115,19 @@ class _ZoomableMapState extends State<ZoomableMap> {
 
     final pictureInfo = await vg.loadPicture(SvgStringLoader(svgString), null);
 
-    final document = XmlDocument.parse(svgString);
+    // final document = XmlDocument.parse(svgString);
     setState(() {
       picture = pictureInfo;
-      converter = SvgToGridConverter(document, (pictureInfo.size.width).ceil(),
-          (pictureInfo.size.height).ceil());
-      grid = generateGrid(svgString);
+      // converter = SvgToGridConverter(document, (pictureInfo.size.width).ceil(),
+      //     (pictureInfo.size.height).ceil());
+      // grid = generateGrid(svgString);
     });
 
-    print(_getSectionOpenSideMidpoint('section_92'));
+    // print(_getSectionAisleSideMidpoint('section_0'));
   }
 
   Grid generateGrid(String svgString) {
-    final startTime = DateTime.now();
     final grid = converter.parseSvg();
-
-    final endTime = DateTime.now();
-    final elapsedTime = endTime.difference(startTime);
-
-    print('Time taken: ${elapsedTime.inMilliseconds} ms');
-
-    // Print the grid
-    // final str = grid.cells
-    //     .map((row) => row.map((cell) => cell ? ' ' : 'X').join(' '))
-    //     .join('\n');
-    // log(str);
 
     return grid;
   }
@@ -138,8 +141,9 @@ class _ZoomableMapState extends State<ZoomableMap> {
   Rect _getSectionRectWithPadding(String sectionId) {
     final sectionRect = _getSectionRect(sectionId);
 
-    return Rect.fromLTRB(sectionRect.left - 5, sectionRect.top - 5,
-        sectionRect.right + 5, sectionRect.bottom + 5);
+    return sectionRect;
+    // return Rect.fromLTRB(sectionRect.left - 2, sectionRect.top - 2,
+    // sectionRect.right + 2, sectionRect.bottom + 2);
   }
 
   Offset _getSectionCenter(String sectionId) {
@@ -149,7 +153,8 @@ class _ZoomableMapState extends State<ZoomableMap> {
         sectionRect.top + sectionRect.height / 2);
   }
 
-  Offset _getSectionOpenSideMidpoint(String sectionId) {
+  // TODO; rename to getSectionAisleSideMidpoint
+  Offset _getSectionAisleSideMidpoint(String sectionId) {
     // The open midpoint of the open side of the section is the walkable point closest to the center of the section
 
     final sectionRect = _getSectionRectWithPadding(sectionId);
@@ -165,6 +170,7 @@ class _ZoomableMapState extends State<ZoomableMap> {
       Offset(sectionRect.left + sectionRect.width / 2, sectionRect.bottom)
     ];
 
+    // TODO: scale
     final walkableSideMidpoints = sideMidpoints
         .where((point) => grid.isWalkable(point.dx.ceil(), point.dy.ceil()))
         .toList();
@@ -181,22 +187,55 @@ class _ZoomableMapState extends State<ZoomableMap> {
     return walkableSideMidpoints.first;
   }
 
-  void _onTapUp(TapUpDetails details) {
+  Future<void> _onTapUp(TapUpDetails details) async {
     // The localPosition is skewed because where we tapped on the canvas is being scaled down and thus items are appearing in the wrong place. So we need to correct for that
     Offset position = Offset(
         details.localPosition.dx * 1 / _getInitialPictureScale(),
         details.localPosition.dy * 1 / _getInitialPictureScale());
 
+    print(position);
+
+    var (start, end) = positions;
+
+    if (start == null) {
+      start = position;
+    } else if (end == null) {
+      end = position;
+    } else {
+      start = Offset(end.dx, end.dy);
+      end = position;
+    }
+
     setState(() {
-      items.add(position);
+      positions = (start, end);
+      // add positions to items
+      if (start != null) {
+        items.clear();
+        items.add(start);
+      }
+      if (end != null) {
+        items.add(end);
+      }
     });
+
+    if (start != null && end != null) {
+      final data = await fetchRouteByPos(start, end);
+
+      setState(() {
+        route.clear();
+        route =
+            data.map<Offset>((r) => Offset(r[1] / 1.0, r[0] / 1.0)).toList();
+
+        print(data[0]);
+      });
+    }
   }
 
-  void _onLongPress() {
+  Future<void> _getRoute() async {
+    final data = await fetchRouteBySectionId('section_70', 'section_12');
+
     setState(() {
-      if (items.isNotEmpty) {
-        route = List.from(items); // Use items to create a sample route
-      }
+      route = data.map<Offset>((r) => Offset(r[1] / 1.0, r[0] / 1.0)).toList();
     });
   }
 
@@ -215,7 +254,7 @@ class _ZoomableMapState extends State<ZoomableMap> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Zoomable Map'),
+        title: Text('Floor Plan'),
       ),
       body: Container(
         // height should be screen height * 0.7
@@ -229,7 +268,6 @@ class _ZoomableMapState extends State<ZoomableMap> {
           child: GestureDetector(
             // TODO: this temporariluy shows adding items to the map by tapping. We want to actually generate the items on the map
             onTapUp: _onTapUp,
-            onLongPress: _onLongPress,
             child: CustomPaint(
               painter: picture == null
                   ? null
