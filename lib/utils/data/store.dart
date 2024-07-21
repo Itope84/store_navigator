@@ -46,4 +46,16 @@ class Store {
 
     return data;
   }
+
+  static String tableName = 'stores';
+
+  static String createTableQuery = '''
+    CREATE TABLE $tableName(
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      address TEXT,
+      logo TEXT,
+      floor_plan TEXT
+    )
+  ''';
 }
