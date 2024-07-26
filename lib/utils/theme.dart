@@ -37,7 +37,6 @@ ThemeData createTheme() {
   );
 
   return ThemeData(
-    // primarySwatch: getMaterialColor(purple),
     colorScheme:
         ColorScheme.fromSeed(seedColor: purple, brightness: Brightness.light),
     primaryColor: purple,
@@ -75,14 +74,13 @@ ThemeData createTheme() {
         textStyle: const TextStyle(
           fontSize: 96,
           fontWeight: FontWeight.w700,
-          letterSpacing: -1.5,
+          color: Color(0xFF171A1F),
         ),
       ),
       displayMedium: GoogleFonts.lexend(
         textStyle: const TextStyle(
           fontSize: 60,
           fontWeight: FontWeight.w700,
-          letterSpacing: -0.5,
         ),
       ),
       displaySmall: GoogleFonts.lexend(
@@ -93,27 +91,27 @@ ThemeData createTheme() {
       ),
       headlineLarge: GoogleFonts.lexend(
         textStyle: const TextStyle(
-          fontSize: 36,
-          letterSpacing: -1.5,
+          fontSize: 32,
+
+          // TODO:
+          color: Color(0xFF171A1F),
         ),
       ),
       // generate the rest
       headlineMedium: GoogleFonts.lexend(
         textStyle: const TextStyle(
           fontSize: 24,
-          letterSpacing: -0.5,
         ),
       ),
       headlineSmall: GoogleFonts.lexend(
         textStyle: const TextStyle(
-          fontSize: 18,
+          fontSize: 20,
         ),
       ),
       bodyLarge: GoogleFonts.manrope(
         textStyle: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w400,
-          letterSpacing: 0.5,
         ),
       ),
       bodyMedium: GoogleFonts.manrope(
@@ -126,7 +124,6 @@ ThemeData createTheme() {
         textStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
-          letterSpacing: 0.25,
         ),
       ),
       titleLarge: GoogleFonts.lexend(
@@ -151,7 +148,6 @@ ThemeData createTheme() {
         textStyle: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w400,
-          letterSpacing: 0.5,
         ),
       ),
       labelMedium: GoogleFonts.manrope(
@@ -164,7 +160,6 @@ ThemeData createTheme() {
         textStyle: const TextStyle(
           fontSize: 8,
           fontWeight: FontWeight.w400,
-          letterSpacing: 0.25,
         ),
       ),
     ),

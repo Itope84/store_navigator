@@ -1,20 +1,21 @@
+import 'package:flutter_query/flutter_query.dart';
 import 'package:store_navigator/utils/data/shelf.dart';
 
 class Store {
   String? address;
   String? floorPlan;
-  String? id;
+  late String id;
   String? logo;
-  String? name;
+  late String name;
 
   List<Shelf>? shelves;
 
   Store(
       {this.address,
       this.floorPlan,
-      this.id,
+      required this.id,
       this.logo,
-      this.name,
+      required this.name,
       this.shelves});
 
   Store.fromJson(Map<String, dynamic> json) {
