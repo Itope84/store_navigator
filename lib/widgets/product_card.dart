@@ -3,51 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:store_navigator/utils/data/product.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
+import 'package:store_navigator/widgets/product_qty.dart';
 
-class TinyFab extends StatelessWidget {
-  final IconData icon;
-  final Function() onPressed;
-  final bool isFilled;
-  const TinyFab(
-      {required this.icon,
-      required this.onPressed,
-      this.isFilled = false,
-      super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 35,
-      height: 35,
-      child: FittedBox(
-        child: IconButton(
-          onPressed: onPressed,
-          style: ButtonStyle(
-            backgroundColor: isFilled
-                ? WidgetStateProperty.all(
-                    Theme.of(context).primaryColor.withAlpha(30))
-                : WidgetStateProperty.all(
-                    Theme.of(context).scaffoldBackgroundColor),
-            shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                side: isFilled
-                    ? BorderSide.none
-                    : BorderSide(
-                        color: Theme.of(context).primaryColor, width: 2),
-                borderRadius: BorderRadius.circular(100.0))),
-          ),
-          padding: EdgeInsets.zero,
-          icon: Icon(
-            color: Theme.of(context).primaryColor,
-            icon,
-            size: 40,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class ProductCard extends StatelessWidget {
+class ProductCard extends StatefulWidget {
   final Product product;
   final ShoppingListItem? shoppingListItem;
   final void Function() onAddProduct;
@@ -59,6 +17,41 @@ class ProductCard extends StatelessWidget {
       required this.onRemoveProduct,
       this.shoppingListItem,
       super.key});
+
+  @override
+  State<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard> {
+  ShoppingListItem? _item;
+
+  @override
+  void initState() {
+    _item = widget.shoppingListItem;
+
+    super.initState();
+  }
+
+  addProduct() {
+    widget.onAddProduct();
+
+    // This is a hacky way to achieve this. It's better to use a state management solution
+    setState(() {
+      _item = widget.shoppingListItem ??
+          ShoppingListItem(
+              product: widget.product,
+              qty: _item?.qty != null ? _item!.qty + 1 : 1,
+              shoppingListId: 'temp');
+    });
+  }
+
+  removeProduct() {
+    widget.onRemoveProduct();
+
+    setState(() {
+      _item = widget.shoppingListItem;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +75,7 @@ class ProductCard extends StatelessWidget {
                       width: 80,
                       height: 80,
                       child: CachedNetworkImage(
-                        imageUrl: product.image ?? '',
+                        imageUrl: widget.product.image ?? '',
                         errorWidget: (ctx, exc, obj) {
                           // TODO: placeholder image
                           return const Placeholder();
@@ -105,7 +98,7 @@ class ProductCard extends StatelessWidget {
                   Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        product.name!,
+                        widget.product.name!,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context)
@@ -118,31 +111,12 @@ class ProductCard extends StatelessWidget {
               Positioned(
                 right: 4,
                 top: 60,
-                child: shoppingListItem != null
-                    ? Container(
-                        width: 90,
-                        decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Colors.grey.shade300,
-                              width: 2,
-                            ),
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                            borderRadius: BorderRadius.circular(100)),
-                        child: Row(
-                          children: [
-                            TinyFab(
-                                icon: Icons.remove_rounded,
-                                isFilled: true,
-                                onPressed: onRemoveProduct),
-                            Expanded(
-                                child: Center(
-                                    child: Text(
-                                        shoppingListItem!.qty.toString()))),
-                            TinyFab(icon: Icons.add, onPressed: onAddProduct),
-                          ],
-                        ),
-                      )
-                    : TinyFab(icon: Icons.add, onPressed: onAddProduct),
+                child: _item != null
+                    ? ProductQtyController(
+                        qty: _item!.qty,
+                        onAddProduct: addProduct,
+                        onRemoveProduct: removeProduct)
+                    : TinyFab(icon: Icons.add, onPressed: addProduct),
               ),
             ],
           )),

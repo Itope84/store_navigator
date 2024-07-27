@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:store_navigator/screens/shopping_list/main.dart';
+import 'package:store_navigator/utils/data/shopping_list.dart';
+import 'package:store_navigator/utils/data/store.dart';
 import 'package:store_navigator/utils/icons.dart';
 
 class ShoppingTripCard extends StatelessWidget {
-  const ShoppingTripCard({Key? key, this.isMainCard = false}) : super(key: key);
+  final Store store;
+  final ShoppingList shoppingList;
+
+  const ShoppingTripCard(
+      {required this.store,
+      required this.shoppingList,
+      Key? key,
+      this.isMainCard = false})
+      : super(key: key);
 
   final bool isMainCard;
 
@@ -18,7 +29,7 @@ class ShoppingTripCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // A row with two text widgets, the first one is bold
+              // TODO: add updated time
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -26,7 +37,7 @@ class ShoppingTripCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
-                      'Tesco Woolwich Arsenal',
+                      store.name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleLarge,
@@ -38,8 +49,8 @@ class ShoppingTripCard extends StatelessWidget {
               const SizedBox(height: 16),
 
               Text(
-                'Morrisons british chicken thighs, Morrisons british chicken thighs,  and 12 more.',
-                maxLines: 2,
+                "${shoppingList.items!.take(2).map((e) => e.product.name).join(', ')} ${shoppingList.items!.length > 2 ? 'and ${shoppingList.items!.length - 2} more' : ''}",
+                maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
@@ -50,7 +61,11 @@ class ShoppingTripCard extends StatelessWidget {
                 Row(
                   children: [
                     OutlinedButton(
-                      onPressed: () => {},
+                      onPressed: () => {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (ctx) => ShoppingListScreen(
+                                id: shoppingList.id, store: store)))
+                      },
                       child: const Text('Edit List'),
                     ),
                     SizedBox(width: 12),

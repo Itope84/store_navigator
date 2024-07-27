@@ -5,6 +5,7 @@ import 'package:store_navigator/utils/api/shopping_list.dart';
 import 'package:store_navigator/screens/select_store.dart';
 import 'package:store_navigator/utils/api/stores.dart';
 import 'package:store_navigator/screens/shopping_list/main.dart';
+import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/widgets/pending_trip.dart';
 
 // TODO: style as in figma
@@ -72,10 +73,11 @@ class HomeScreen extends HookWidget {
                                   (storeSelectorContext, store) {
                                 Navigator.of(storeSelectorContext)
                                     .pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          ShoppingListScreen(store: store)),
-                                );
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              ShoppingListScreen(store: store)),
+                                    )
+                                    .then((_) => queryResponse.refetch());
                               })
                             }
                         : null,
@@ -101,45 +103,48 @@ class HomeScreen extends HookWidget {
                   ...(shoppingLists != null && shoppingLists.length > 0
                       ? [
                           const SizedBox(height: 10),
-                          const ShoppingTripCard(
+                          ShoppingTripCard(
+                            store: shoppingLists[0].store!,
+                            shoppingList: shoppingLists[0],
                             isMainCard: true,
                           ),
-                          Container(
-                            height: 160,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                Container(
+
+                          // TODO: change this page to the "all lists page"? i.e. show all lists in the isMainCard: true format so there's no need for a separate shopping lists page
+                          if (shoppingLists.length > 1)
+                            Container(
+                              height: 160,
+                              child: ListView.builder(
+                                itemCount: shoppingLists.length - 1,
+                                scrollDirection: Axis.horizontal,
+                                itemBuilder: (ctx, index) => Container(
                                   width: 200,
-                                  child: ShoppingTripCard(),
+                                  child: ShoppingTripCard(
+                                    store: shoppingLists[index + 1].store!,
+                                    shoppingList: shoppingLists[index + 1],
+                                  ),
                                 ),
-                                Container(
-                                  width: 200,
-                                  child: ShoppingTripCard(),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
                           const SizedBox(height: 40),
-                          Text('Past Shopping Trips',
-                              style: Theme.of(context).textTheme.titleLarge),
-                          const SizedBox(height: 10),
-                          Container(
-                            height: 160,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                Container(
-                                  width: 200,
-                                  child: ShoppingTripCard(),
-                                ),
-                                Container(
-                                  width: 200,
-                                  child: ShoppingTripCard(),
-                                ),
-                              ],
-                            ),
-                          ),
+                          // Text('Past Shopping Trips',
+                          //     style: Theme.of(context).textTheme.titleLarge),
+                          // const SizedBox(height: 10),
+                          // Container(
+                          //   height: 160,
+                          //   child: ListView(
+                          //     scrollDirection: Axis.horizontal,
+                          //     children: [
+                          //       Container(
+                          //         width: 200,
+                          //         child: ShoppingTripCard(),
+                          //       ),
+                          //       Container(
+                          //         width: 200,
+                          //         child: ShoppingTripCard(),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
                         ]
                       : [
                           const Padding(

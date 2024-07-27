@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_query/flutter_query.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:store_navigator/utils/api/products.dart';
 import 'package:store_navigator/utils/data/database.dart';
 import 'package:store_navigator/utils/data/product.dart';
 import 'package:store_navigator/utils/data/store.dart';
@@ -60,7 +62,7 @@ class ShoppingListItem {
 class ShoppingList {
   final String id;
   String? name;
-  final String storeId;
+  String storeId;
   List<ShoppingListItem>? items;
   final DateTime? createdAt;
   DateTime? updatedAt;
@@ -125,13 +127,89 @@ class ShoppingList {
       updated_at TEXT
     )
   ''';
-}
 
-QueryResult<List<ShoppingList>> useShoppingLists() {
-  return useQuery('shopping-lists', (k) async {
+  static String query = '''
+    SELECT
+      sl.*,
+      sli.id as item_id,
+      sli.product_id,
+      sli.section_id,
+      sli.qty
+    FROM
+      $tableName sl
+    LEFT JOIN
+      ${ShoppingListItem.tableName} sli ON sl.id = sli.shopping_list_id
+    ''';
+
+  static String queryById = '''
+    $query
+    WHERE
+      sl.id = ?
+  ''';
+
+  static Future<List<ShoppingList>> fetch({String? id}) async {
     final db = await DatabaseHelper().db;
-    final response = await db.query(ShoppingList.tableName);
+    final response = await db.rawQuery(
+        // TODO: fix updated_at. it's only being set at creation atm
+        id != null ? queryById : '$query ORDER BY sl.updated_at DESC',
+        id != null ? [id] : null);
 
-    return response.map((e) => ShoppingList.fromJson(e)).toList();
-  });
+    if (response.isEmpty) return [];
+
+    // TODO: temporary, remove when product is fetched from db
+    // TODO: axctually, the only reason we need products to be non-nullable is to generate a description. Instead add description to shopping list and generate it from the items on the list before savimng to db
+    // fetch products from api, for each response.
+    final uniqueProductIds =
+        response.map((e) => e['product_id'] as String).toSet().toList();
+
+    final products = await fetchProducts(ids: uniqueProductIds);
+    final productsMap =
+        Map.fromEntries(products.map((p) => MapEntry(p.id!, p)));
+
+    // create a map of shopping list id to shopping list to unique-ify the joined results
+    final shoppingLists = response
+        .fold<Map<String, ShoppingList>>(
+          {},
+          (acc, e) {
+            final id = e['id'] as String;
+            if (acc.containsKey(id)) {
+              acc[id]!.items!.add(ShoppingListItem(
+                  id: e['item_id'] as String,
+                  product: productsMap[e['product_id'] as String]!,
+                  sectionId: e['section_id'] as String?,
+                  qty: e['qty'] as int,
+                  shoppingListId: id));
+            } else {
+              acc[id] = ShoppingList.fromJson(e)
+                ..items = [
+                  ShoppingListItem(
+                      id: e['item_id'] as String,
+                      product: productsMap[e['product_id'] as String]!,
+                      sectionId: e['section_id'] as String?,
+                      qty: e['qty'] as int,
+                      shoppingListId: id)
+                ];
+            }
+            return acc;
+          },
+        )
+        .values
+        .toList();
+
+    return shoppingLists;
+  }
+
+  saveToDb() async {
+    final db = await DatabaseHelper().db;
+    final json = toJson()..remove('items');
+    print(json);
+    await db.insert(tableName, json,
+        conflictAlgorithm: ConflictAlgorithm.replace);
+
+    await Future.forEach<ShoppingListItem>(items ?? [], (item) async {
+      final itemJson = item.toJson()..remove('product');
+      print(itemJson);
+      await db.insert(ShoppingListItem.tableName, itemJson);
+    });
+  }
 }
