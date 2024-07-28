@@ -126,12 +126,6 @@ class _ZoomableMapState extends State<ZoomableMap> {
     // print(_getSectionAisleSideMidpoint('section_0'));
   }
 
-  Grid generateGrid(String svgString) {
-    final grid = converter.parseSvg();
-
-    return grid;
-  }
-
   Rect _getSectionRect(String sectionId) {
     final section = converter.paths[sectionId];
 
@@ -153,7 +147,6 @@ class _ZoomableMapState extends State<ZoomableMap> {
         sectionRect.top + sectionRect.height / 2);
   }
 
-  // TODO; rename to getSectionAisleSideMidpoint
   Offset _getSectionAisleSideMidpoint(String sectionId) {
     // The open midpoint of the open side of the section is the walkable point closest to the center of the section
 

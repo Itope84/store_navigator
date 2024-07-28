@@ -37,20 +37,41 @@ class _ProductCardState extends State<ProductCard> {
 
     // This is a hacky way to achieve this. It's better to use a state management solution
     setState(() {
-      _item = widget.shoppingListItem ??
-          ShoppingListItem(
-              product: widget.product,
-              qty: _item?.qty != null ? _item!.qty + 1 : 1,
-              shoppingListId: 'temp');
+      if (_item != widget.shoppingListItem) {
+        // we have created a new instance of the item because og shoppinglistitem given was null
+        if (_item != null) {
+          _item!.qty++;
+        } else {
+          _item = ShoppingListItem(
+              product: widget.product, qty: 1, shoppingListId: 'temp');
+        }
+      } else {
+        _item = widget.shoppingListItem ??
+            ShoppingListItem(
+                product: widget.product,
+                qty: _item?.qty != null ? _item!.qty + 1 : 1,
+                shoppingListId: 'temp');
+      }
     });
   }
 
   removeProduct() {
-    widget.onRemoveProduct();
-
     setState(() {
-      _item = widget.shoppingListItem;
+      if (_item != widget.shoppingListItem) {
+        // we've created a new instance of the item
+        if (_item != null && _item!.qty > 1) {
+          _item!.qty--;
+        } else {
+          _item = null;
+        }
+      } else {
+        if (_item != null && _item!.qty == 1) {
+          _item = null;
+        }
+      }
     });
+
+    widget.onRemoveProduct();
   }
 
   @override

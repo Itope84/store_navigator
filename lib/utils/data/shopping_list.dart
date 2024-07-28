@@ -136,9 +136,9 @@ class ShoppingList {
       sli.section_id,
       sli.qty
     FROM
-      $tableName sl
+      ${ShoppingListItem.tableName} sli
     LEFT JOIN
-      ${ShoppingListItem.tableName} sli ON sl.id = sli.shopping_list_id
+      ${tableName} sl ON sl.id = sli.shopping_list_id
     ''';
 
   static String queryById = '''
@@ -160,7 +160,10 @@ class ShoppingList {
     // TODO: axctually, the only reason we need products to be non-nullable is to generate a description. Instead add description to shopping list and generate it from the items on the list before savimng to db
     // fetch products from api, for each response.
     final uniqueProductIds =
-        response.map((e) => e['product_id'] as String).toSet().toList();
+        response.map((e) => "${e['product_id']}").toSet().toList();
+
+    print("db query resp: $response");
+    print(uniqueProductIds);
 
     final products = await fetchProducts(ids: uniqueProductIds);
     final productsMap =
@@ -201,8 +204,13 @@ class ShoppingList {
 
   saveToDb() async {
     final db = await DatabaseHelper().db;
+    // update the updated_at field
+    updatedAt = DateTime.now();
+
     final json = toJson()..remove('items');
+
     print(json);
+
     await db.insert(tableName, json,
         conflictAlgorithm: ConflictAlgorithm.replace);
 

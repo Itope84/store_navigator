@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
@@ -29,6 +31,16 @@ class HomeScreen extends HookWidget {
 
     final isLoading = queryResponse.state.status == QueryStatus.fetching ||
         storesResp.state.status == QueryStatus.fetching;
+
+    void editShoppingList(ShoppingList list) {
+      Navigator.of(context)
+          .push(
+            MaterialPageRoute(
+                builder: (context) =>
+                    ShoppingListScreen(id: list.id, store: list.store!)),
+          )
+          .then((_) => queryResponse.refetch());
+    }
 
     return Scaffold(
       // title should be aligned left and have a padding of 8.0 on the top and bottom
@@ -107,6 +119,7 @@ class HomeScreen extends HookWidget {
                             store: shoppingLists[0].store!,
                             shoppingList: shoppingLists[0],
                             isMainCard: true,
+                            onEdit: () => editShoppingList(shoppingLists[0]),
                           ),
 
                           // TODO: change this page to the "all lists page"? i.e. show all lists in the isMainCard: true format so there's no need for a separate shopping lists page
@@ -119,9 +132,10 @@ class HomeScreen extends HookWidget {
                                 itemBuilder: (ctx, index) => Container(
                                   width: 200,
                                   child: ShoppingTripCard(
-                                    store: shoppingLists[index + 1].store!,
-                                    shoppingList: shoppingLists[index + 1],
-                                  ),
+                                      store: shoppingLists[index + 1].store!,
+                                      shoppingList: shoppingLists[index + 1],
+                                      onEdit: () => editShoppingList(
+                                          shoppingLists[index + 1])),
                                 ),
                               ),
                             ),

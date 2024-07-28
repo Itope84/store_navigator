@@ -35,7 +35,7 @@ Future<List<dynamic>> fetchRouteByPos(Offset start, Offset end) async {
 
 Future<void> fetchGrid() async {
   try {
-    final response = await get(Uri.parse('http://localhost:5000/get-grid'));
+    final response = await get(Uri.parse('http://92.168.1.108:8000/get-grid'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 

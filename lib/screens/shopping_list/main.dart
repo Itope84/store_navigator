@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:store_navigator/screens/shopping_list/product_search.dart';
 import 'package:store_navigator/utils/api/shopping_list.dart';
@@ -7,11 +9,13 @@ import 'package:store_navigator/utils/data/store.dart';
 import 'package:store_navigator/screens/select_store.dart';
 import 'package:store_navigator/screens/shopping_list/fake_search_input.dart';
 import 'package:store_navigator/widgets/shopping_list_item_tile.dart';
+import 'package:store_navigator/zoomable_map.dart';
 
 class ShoppingListScreen extends StatefulWidget {
   final String? id;
   final Store store;
-  const ShoppingListScreen({this.id, required this.store, super.key});
+
+  ShoppingListScreen({this.id, required this.store, super.key});
 
   @override
   State<ShoppingListScreen> createState() => _ShoppingListScreenState();
@@ -58,6 +62,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   reduceProduct(Product product) {
     final item = shoppingList.findItem(product);
 
+    print('reducing product, from ${item?.qty}');
+
     setState(() {
       if (item == null) {
         return;
@@ -69,6 +75,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         }
       }
     });
+
+    print('item now ${item?.qty}');
 
     // TODO: debounce save to db
   }
@@ -203,14 +211,28 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                           SizedBox(height: 18),
                           Padding(
                             padding: padding,
-                            child: FilledButton(
+                            child: OutlinedButton(
                               onPressed: () {
-                                shoppingList.saveToDb();
-                                Navigator.of(context).pop();
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (ctx) => ZoomableMap()));
+                              },
+                              child: const Text('Navigate'),
+                            ),
+                          ),
+                          Padding(
+                            padding: padding,
+                            child: FilledButton(
+                              onPressed: () async {
+                                await shoppingList.saveToDb();
+
+                                if (context.mounted) {
+                                  Navigator.of(context).pop();
+                                }
                               },
                               child: const Text('Done'),
                             ),
                           ),
+                          SizedBox(height: 18),
                         ]
                       : [
                           Center(
