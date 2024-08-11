@@ -9,7 +9,7 @@ import 'package:store_navigator/utils/data/store.dart';
 import 'package:store_navigator/screens/select_store.dart';
 import 'package:store_navigator/screens/shopping_list/fake_search_input.dart';
 import 'package:store_navigator/widgets/shopping_list_item_tile.dart';
-import 'package:store_navigator/zoomable_map.dart';
+import 'package:store_navigator/screens/zoomable_map.dart';
 
 class ShoppingListScreen extends StatefulWidget {
   final String? id;

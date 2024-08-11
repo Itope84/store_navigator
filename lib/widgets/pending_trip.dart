@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:store_navigator/screens/shopping_list/main.dart';
-import 'package:store_navigator/screens/store_map.dart';
+import 'package:store_navigator/store_map.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/utils/data/store.dart';
 import 'package:store_navigator/utils/icons.dart';
-import 'package:store_navigator/zoomable_map.dart';
+import 'package:store_navigator/screens/zoomable_map.dart';
 
 class ShoppingTripCard extends StatelessWidget {
   final Store store;

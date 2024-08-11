@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:store_navigator/utils/icons.dart';
-import 'package:store_navigator/zoomable_map.dart';
+import 'package:store_navigator/screens/zoomable_map.dart';
 
 class BottomNav extends StatelessWidget {
   final int activeIndex;

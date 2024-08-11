@@ -76,6 +76,9 @@ class _ZoomableMapState extends State<ZoomableMap> {
 
   late SvgToGridConverter converter;
 
+  final TransformationController _transformationController =
+      TransformationController();
+
   late Grid grid;
 
   double scale = 1.0;
@@ -94,6 +97,12 @@ class _ZoomableMapState extends State<ZoomableMap> {
     _loadSvg();
 
     _getRoute();
+  }
+
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
   }
 
   final MAP_SCREEN_RATIO = 0.7;
@@ -147,6 +156,7 @@ class _ZoomableMapState extends State<ZoomableMap> {
         sectionRect.top + sectionRect.height / 2);
   }
 
+  // TODO: remove all these
   Offset _getSectionAisleSideMidpoint(String sectionId) {
     // The open midpoint of the open side of the section is the walkable point closest to the center of the section
 
@@ -181,12 +191,14 @@ class _ZoomableMapState extends State<ZoomableMap> {
   }
 
   Future<void> _onTapUp(TapUpDetails details) async {
-    // The localPosition is skewed because where we tapped on the canvas is being scaled down and thus items are appearing in the wrong place. So we need to correct for that
-    Offset position = Offset(
-        details.localPosition.dx * 1 / _getInitialPictureScale(),
-        details.localPosition.dy * 1 / _getInitialPictureScale());
+    final Matrix4 inverseMatrix =
+        Matrix4.inverted(_transformationController.value);
+    final Offset untransformedOffset =
+        MatrixUtils.transformPoint(inverseMatrix, details.localPosition);
 
-    print(position);
+    Offset position = Offset(
+        untransformedOffset.dx * 1 / _getInitialPictureScale(),
+        untransformedOffset.dy * 1 / _getInitialPictureScale());
 
     var (start, end) = positions;
 
@@ -213,6 +225,7 @@ class _ZoomableMapState extends State<ZoomableMap> {
 
     if (start != null && end != null) {
       final data = await fetchRouteByPos(start, end);
+      // TODO: errors when you tap beyond boundaries of map and there's no route returned (empty list). Handle this gracefully, by not registering the tap
 
       setState(() {
         route.clear();
@@ -225,7 +238,7 @@ class _ZoomableMapState extends State<ZoomableMap> {
   }
 
   Future<void> _getRoute() async {
-    final data = await fetchRouteBySectionId('section_70', 'section_12');
+    final data = await fetchRouteBySectionId('section_entrance', 'section_12');
 
     setState(() {
       route = data.map<Offset>((r) => Offset(r[1] / 1.0, r[0] / 1.0)).toList();
@@ -239,8 +252,7 @@ class _ZoomableMapState extends State<ZoomableMap> {
 
     double imageWidth = _getInitialPictureScale() * picture!.size.width;
 
-    return EdgeInsets.only(
-        right: imageWidth - MediaQuery.of(context).size.width);
+    return EdgeInsets.only(right: imageWidth);
   }
 
   @override
@@ -249,18 +261,18 @@ class _ZoomableMapState extends State<ZoomableMap> {
       appBar: AppBar(
         title: Text('Floor Plan'),
       ),
-      body: Container(
-        // height should be screen height * 0.7
-        height: _getWidgetHeight(),
-        child: InteractiveViewer(
-          minScale: 1.0,
-          maxScale: 5.0,
-          // constrained: false,
-          boundaryMargin: _getBoundaryMargin(),
-
-          child: GestureDetector(
-            // TODO: this temporariluy shows adding items to the map by tapping. We want to actually generate the items on the map
-            onTapUp: _onTapUp,
+      body: GestureDetector(
+        // TODO: this temporariluy shows adding items to the map by tapping. We want to actually generate the items on the map
+        onTapUp: _onTapUp,
+        child: Container(
+          // height should be screen height * 0.7
+          height: _getWidgetHeight(),
+          child: InteractiveViewer(
+            transformationController: _transformationController,
+            minScale: 1.0,
+            maxScale: 5.0,
+            // constrained: false,
+            boundaryMargin: _getBoundaryMargin(),
             child: CustomPaint(
               painter: picture == null
                   ? null
