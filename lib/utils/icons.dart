@@ -11,8 +11,6 @@ Widget getSvgIcon(String path, {double? size, Color? color}) {
   );
 }
 
-// create a set of icons that can be called statically as CustomIcons.iconName, each icon is located in assets/icons/iconName.svg
-
 class CustomIcons {
   static Widget home({double? size, Color? color}) =>
       getSvgIcon('assets/icons/home.svg', size: size, color: color);

@@ -15,7 +15,7 @@ class ShoppingListScreen extends StatefulWidget {
   final String? id;
   final Store store;
 
-  ShoppingListScreen({this.id, required this.store, super.key});
+  const ShoppingListScreen({this.id, required this.store, super.key});
 
   @override
   State<ShoppingListScreen> createState() => _ShoppingListScreenState();
@@ -214,7 +214,9 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                             child: OutlinedButton(
                               onPressed: () {
                                 Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => ZoomableMap()));
+                                    builder: (ctx) => ZoomableMap(
+                                          shoppingList: shoppingList,
+                                        )));
                               },
                               child: const Text('Navigate'),
                             ),

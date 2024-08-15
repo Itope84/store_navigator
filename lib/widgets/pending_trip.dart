@@ -74,7 +74,9 @@ class ShoppingTripCard extends StatelessWidget {
                         FilledButton(
                           onPressed: () => {
                             Navigator.of(context).push(MaterialPageRoute(
-                                builder: (ctx) => ZoomableMap()))
+                                builder: (ctx) => ZoomableMap(
+                                      shoppingList: shoppingList,
+                                    )))
                           },
                           child: const Text('Navigate'),
                         ),

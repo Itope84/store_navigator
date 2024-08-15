@@ -2,10 +2,13 @@ import 'dart:developer';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:store_navigator/utils/api/route.dart';
+import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/utils/floorplan_to_grid.dart';
+import 'package:store_navigator/utils/icons.dart';
 import 'package:xml/xml.dart';
 
 class ZoomableMapPainter extends CustomPainter {
@@ -60,16 +63,15 @@ class ZoomableMapPainter extends CustomPainter {
 }
 
 class ZoomableMap extends StatefulWidget {
+  final ShoppingList shoppingList;
+
   final String assetName = 'assets/floor_plan.svg';
 
-  ZoomableMap({Key? key}) : super(key: key);
+  const ZoomableMap({super.key, required this.shoppingList});
 
   @override
-  _ZoomableMapState createState() => _ZoomableMapState();
+  State<ZoomableMap> createState() => _ZoomableMapState();
 }
-
-// define enum start | end
-enum Position { start, end }
 
 class _ZoomableMapState extends State<ZoomableMap> {
   PictureInfo? picture;
@@ -252,37 +254,65 @@ class _ZoomableMapState extends State<ZoomableMap> {
 
     double imageWidth = _getInitialPictureScale() * picture!.size.width;
 
-    return EdgeInsets.only(right: imageWidth);
+    return EdgeInsets.only(right: imageWidth, top: 100);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Floor Plan'),
-      ),
-      body: GestureDetector(
-        // TODO: this temporariluy shows adding items to the map by tapping. We want to actually generate the items on the map
-        onTapUp: _onTapUp,
-        child: Container(
-          // height should be screen height * 0.7
-          height: _getWidgetHeight(),
-          child: InteractiveViewer(
-            transformationController: _transformationController,
-            minScale: 1.0,
-            maxScale: 5.0,
-            // constrained: false,
-            boundaryMargin: _getBoundaryMargin(),
-            child: CustomPaint(
-              painter: picture == null
-                  ? null
-                  : ZoomableMapPainter(picture!, _getInitialPictureScale(),
-                      offset, items, route),
-              child: Container(),
-            ),
-          ),
+        backgroundColor: Color(0xFFE8EBF4),
+        appBar: AppBar(
+          toolbarHeight: 0,
+          backgroundColor: Color(0xFFE8EBF4),
         ),
-      ),
-    );
+        body: Stack(
+          children: [
+            GestureDetector(
+              // TODO: this temporarily shows adding items to the map by tapping. We want to actually generate the items on the map
+              onTapUp: _onTapUp,
+              child: Container(
+                // height should be screen height * 0.7
+                height: _getWidgetHeight(),
+                child: InteractiveViewer(
+                  transformationController: _transformationController,
+                  minScale: 1.0,
+                  maxScale: 5.0,
+                  // constrained: false,
+                  boundaryMargin: _getBoundaryMargin(),
+                  child: CustomPaint(
+                    painter: picture == null
+                        ? null
+                        : ZoomableMapPainter(picture!,
+                            _getInitialPictureScale(), offset, items, route),
+                    child: Container(),
+                  ),
+                ),
+              ),
+            ),
+            Card(
+              elevation: 2.0,
+              // full width container
+              margin: EdgeInsets.all(16),
+              color: Theme.of(context).scaffoldBackgroundColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Container(
+                padding: EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    CustomIcons.store(
+                        size: 24, color: Theme.of(context).primaryColor),
+                    SizedBox(width: 8),
+                    Text(
+                      widget.shoppingList.store?.name ?? 'Store Map',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    )
+                  ],
+                ),
+              ),
+            )
+          ],
+        ));
   }
 }
