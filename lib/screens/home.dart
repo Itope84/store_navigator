@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_query/flutter_query.dart';
@@ -10,8 +8,9 @@ import 'package:store_navigator/screens/shopping_list/main.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/widgets/pending_trip.dart';
 
-// TODO: style as in figma
 class HomeScreen extends HookWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final queryResponse = useShoppingLists();
@@ -22,9 +21,9 @@ class HomeScreen extends HookWidget {
 
     useEffect(() {
       if (stores != null && shoppingLists != null) {
-        shoppingLists.forEach((list) {
+        for (var list in shoppingLists) {
           list.store = stores.firstWhere((store) => store.id == list.storeId);
-        });
+        }
       }
       return;
     }, [shoppingLists, stores]);
@@ -71,7 +70,7 @@ class HomeScreen extends HookWidget {
         ],
       ),
       body: Container(
-        padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         child: isLoading
             ? const Center(
                 child: CircularProgressIndicator(),
@@ -102,7 +101,7 @@ class HomeScreen extends HookWidget {
                       Text('Pending Shopping Trips',
                           style: Theme.of(context).textTheme.titleLarge),
                       // text button with View all text
-                      if (shoppingLists != null && !shoppingLists.isEmpty)
+                      if (shoppingLists != null && shoppingLists.isNotEmpty)
                         TextButton(
                           onPressed: () => {},
                           child: Text(
@@ -112,7 +111,7 @@ class HomeScreen extends HookWidget {
                         ),
                     ],
                   ),
-                  ...(shoppingLists != null && shoppingLists.length > 0
+                  ...(shoppingLists != null && shoppingLists.isNotEmpty
                       ? [
                           const SizedBox(height: 10),
                           ShoppingTripCard(
@@ -124,12 +123,12 @@ class HomeScreen extends HookWidget {
 
                           // TODO: change this page to the "all lists page"? i.e. show all lists in the isMainCard: true format so there's no need for a separate shopping lists page
                           if (shoppingLists.length > 1)
-                            Container(
+                            SizedBox(
                               height: 160,
                               child: ListView.builder(
                                 itemCount: shoppingLists.length - 1,
                                 scrollDirection: Axis.horizontal,
-                                itemBuilder: (ctx, index) => Container(
+                                itemBuilder: (ctx, index) => SizedBox(
                                   width: 200,
                                   child: ShoppingTripCard(
                                       store: shoppingLists[index + 1].store!,

@@ -55,7 +55,7 @@ class RoundedMaterialTextFormField extends StatelessWidget {
         suffixIcon: suffixIcon ??
             (isClearable && (controller?.text ?? '').isNotEmpty
                 ? IconButton(
-                    icon: Icon(Icons.close),
+                    icon: const Icon(Icons.close),
                     onPressed: () {
                       controller?.clear();
                       onChanged?.call('');

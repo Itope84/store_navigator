@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:store_navigator/screens/shopping_list/product_search.dart';
 import 'package:store_navigator/utils/api/shopping_list.dart';
@@ -9,7 +7,7 @@ import 'package:store_navigator/utils/data/store.dart';
 import 'package:store_navigator/screens/select_store.dart';
 import 'package:store_navigator/screens/shopping_list/fake_search_input.dart';
 import 'package:store_navigator/widgets/shopping_list_item_tile.dart';
-import 'package:store_navigator/screens/zoomable_map.dart';
+import 'package:store_navigator/screens/navigate/navigate_store.dart';
 
 class ShoppingListScreen extends StatefulWidget {
   final String? id;
@@ -93,7 +91,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       body: widget.id != null &&
               // TODO: better loading checks
               apiShoppingList == null
-          ? Center(
+          ? const Center(
               child: SizedBox(
                 width: 40,
                 height: 40,
@@ -105,7 +103,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 18),
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
                     child: GestureDetector(
                       onTap: () {
                         // TODO:  pass a "onChangeStore" param to this widget
@@ -129,7 +127,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                           borderRadius: BorderRadius.circular(100),
                         ),
                         child: Container(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                               horizontal: 24, vertical: 10),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,7 +157,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                                     .headlineMedium!
                                     .copyWith(
                                         fontWeight: FontWeight.w700,
-                                        color: Color(0xFF3B4254)),
+                                        color: const Color(0xFF3B4254)),
                               )
                             ],
                           ),
@@ -208,13 +206,13 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                                       ))
                             ],
                           )),
-                          SizedBox(height: 18),
+                          const SizedBox(height: 18),
                           Padding(
                             padding: padding,
                             child: OutlinedButton(
                               onPressed: () {
                                 Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => ZoomableMap(
+                                    builder: (ctx) => NavigateStoreScreen(
                                           shoppingList: shoppingList,
                                         )));
                               },
@@ -234,7 +232,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                               child: const Text('Done'),
                             ),
                           ),
-                          SizedBox(height: 18),
+                          const SizedBox(height: 18),
                         ]
                       : [
                           Center(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:store_navigator/utils/api/stores.dart';
 import 'package:store_navigator/utils/data/store.dart' as st;
@@ -41,7 +40,7 @@ class SelectStore extends HookWidget {
           actions: [
             // TODO: fix padding so it leaves some gap at the top
             IconButton(
-              icon: Icon(Icons.close),
+              icon: const Icon(Icons.close),
               onPressed: () {
                 Navigator.of(context).pop();
               },

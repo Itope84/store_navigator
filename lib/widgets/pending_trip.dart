@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:store_navigator/screens/shopping_list/main.dart';
-import 'package:store_navigator/store_map.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/utils/data/store.dart';
 import 'package:store_navigator/utils/icons.dart';
-import 'package:store_navigator/screens/zoomable_map.dart';
+import 'package:store_navigator/screens/navigate/navigate_store.dart';
 
 class ShoppingTripCard extends StatelessWidget {
   final Store store;
@@ -15,9 +13,8 @@ class ShoppingTripCard extends StatelessWidget {
       {required this.store,
       required this.shoppingList,
       required this.onEdit,
-      Key? key,
-      this.isMainCard = false})
-      : super(key: key);
+      super.key,
+      this.isMainCard = false});
 
   final bool isMainCard;
 
@@ -70,11 +67,11 @@ class ShoppingTripCard extends StatelessWidget {
                           onPressed: () => {onEdit()},
                           child: const Text('Edit List'),
                         ),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         FilledButton(
                           onPressed: () => {
                             Navigator.of(context).push(MaterialPageRoute(
-                                builder: (ctx) => ZoomableMap(
+                                builder: (ctx) => NavigateStoreScreen(
                                       shoppingList: shoppingList,
                                     )))
                           },

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/widgets/product_qty.dart';
 
@@ -17,7 +16,7 @@ class ShoppingListItemTile extends StatelessWidget {
         onTap: () {
           print('tapped the whole thing');
         },
-        leading: SizedBox(width: 48, height: 48, child: Placeholder()),
+        leading: const SizedBox(width: 48, height: 48, child: Placeholder()),
         title: Text(
           item.product.name!,
           overflow: TextOverflow.ellipsis,
@@ -26,9 +25,9 @@ class ShoppingListItemTile extends StatelessWidget {
               .bodyMedium!
               .copyWith(fontWeight: FontWeight.bold),
         ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 24),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24),
         subtitle: Text('£ ${item.product.price! * item.qty}'),
-        trailing: Container(
+        trailing: SizedBox(
           width: 100,
           height: 40,
           child: ProductQtyController(

@@ -11,10 +11,10 @@ class ShoppingListFakeSearch extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
             border: Border.all(
-                color: Color(0xFF9095A1),
+                color: const Color(0xFF9095A1),
                 strokeAlign: BorderSide.strokeAlignOutside),
             borderRadius: BorderRadius.circular(8)),
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         child: Row(
           children: [
             const Icon(Icons.search),

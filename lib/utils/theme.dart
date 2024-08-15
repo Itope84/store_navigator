@@ -1,7 +1,6 @@
 // create an example theme, where headings use google font lexend, and body text uses google font manrope
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 MaterialColor getMaterialColor(Color color) {

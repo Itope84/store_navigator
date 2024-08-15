@@ -2,7 +2,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
 
-final DB_NAME = 'store_navigator.db';
+const DB_NAME = 'store_navigator.db';
 
 class DatabaseHelper {
   DatabaseHelper.internal();

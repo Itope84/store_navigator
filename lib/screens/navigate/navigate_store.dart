@@ -1,79 +1,25 @@
-import 'dart:developer';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:store_navigator/screens/navigate/zoomable_map_painter.dart';
 import 'package:store_navigator/utils/api/route.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/utils/floorplan_to_grid.dart';
 import 'package:store_navigator/utils/icons.dart';
-import 'package:xml/xml.dart';
+import 'package:store_navigator/utils/shelves.dart';
 
-class ZoomableMapPainter extends CustomPainter {
-  final PictureInfo picture;
-  final double initialScale;
-  final Offset offset;
-  final List<Offset> items;
-  final List<Offset> route;
-
-  ZoomableMapPainter(
-      this.picture, this.initialScale, this.offset, this.items, this.route);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.save();
-    canvas.translate(offset.dx, offset.dy);
-
-    canvas.scale(initialScale);
-
-    print(this.route);
-
-    // Draw the SVG
-    canvas.drawPicture(picture.picture);
-
-    // Draw items
-    Paint itemPaint = Paint()..color = Colors.red;
-    for (var item in items) {
-      canvas.drawCircle(item, 10.0 / initialScale, itemPaint);
-    }
-
-    // TODO: Draw route. A possibly complex algorithm to draw the route between items
-    if (route.isNotEmpty) {
-      Paint routePaint = Paint()
-        ..color = Colors.red
-        ..strokeWidth = 5.0 / initialScale
-        ..style = PaintingStyle.stroke;
-
-      Path path = Path()..moveTo(route[0].dx, route[0].dy);
-      for (var point in route.skip(1)) {
-        path.lineTo(point.dx, point.dy);
-      }
-      canvas.drawPath(path, routePaint);
-    }
-
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
-}
-
-class ZoomableMap extends StatefulWidget {
+class NavigateStoreScreen extends StatefulWidget {
   final ShoppingList shoppingList;
 
   final String assetName = 'assets/floor_plan.svg';
 
-  const ZoomableMap({super.key, required this.shoppingList});
+  const NavigateStoreScreen({super.key, required this.shoppingList});
 
   @override
-  State<ZoomableMap> createState() => _ZoomableMapState();
+  State<NavigateStoreScreen> createState() => _NavigateStoreScreenState();
 }
 
-class _ZoomableMapState extends State<ZoomableMap> {
+class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
   PictureInfo? picture;
 
   late SvgToGridConverter converter;
@@ -82,6 +28,8 @@ class _ZoomableMapState extends State<ZoomableMap> {
       TransformationController();
 
   late Grid grid;
+
+  late List<ShelfNode> shelfNodes;
 
   double scale = 1.0;
   Offset offset = Offset.zero;
@@ -99,6 +47,8 @@ class _ZoomableMapState extends State<ZoomableMap> {
     _loadSvg();
 
     _getRoute();
+
+    _loadShelves();
   }
 
   @override
@@ -107,7 +57,16 @@ class _ZoomableMapState extends State<ZoomableMap> {
     super.dispose();
   }
 
-  final MAP_SCREEN_RATIO = 0.7;
+  final MAP_SCREEN_RATIO = 1.0;
+
+  void _loadShelves() async {
+    final _shelfNodes = await getShelfNodes(
+        widget.shoppingList.store?.shelves ?? [], widget.assetName);
+
+    setState(() {
+      shelfNodes = _shelfNodes;
+    });
+  }
 
   double _getWidgetHeight() {
     return MediaQuery.of(context).size.height * MAP_SCREEN_RATIO;
@@ -117,7 +76,9 @@ class _ZoomableMapState extends State<ZoomableMap> {
     if (picture == null) {
       return 1.0;
     }
-    return _getWidgetHeight() / picture!.size.height;
+    const initialScale = 0.8;
+
+    return _getWidgetHeight() * initialScale / picture!.size.height;
   }
 
   Future<void> _loadSvg() async {
@@ -225,7 +186,7 @@ class _ZoomableMapState extends State<ZoomableMap> {
       }
     });
 
-    if (start != null && end != null) {
+    if (end != null) {
       final data = await fetchRouteByPos(start, end);
       // TODO: errors when you tap beyond boundaries of map and there's no route returned (empty list). Handle this gracefully, by not registering the tap
 
@@ -254,36 +215,42 @@ class _ZoomableMapState extends State<ZoomableMap> {
 
     double imageWidth = _getInitialPictureScale() * picture!.size.width;
 
-    return EdgeInsets.only(right: imageWidth, top: 100);
+    return EdgeInsets.only(
+        left: 20, right: imageWidth - picture!.size.width, top: 100);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Color(0xFFE8EBF4),
+        backgroundColor: const Color(0xFFE8EBF4),
         appBar: AppBar(
           toolbarHeight: 0,
-          backgroundColor: Color(0xFFE8EBF4),
+          backgroundColor: const Color(0xFFE8EBF4),
         ),
         body: Stack(
           children: [
             GestureDetector(
               // TODO: this temporarily shows adding items to the map by tapping. We want to actually generate the items on the map
               onTapUp: _onTapUp,
-              child: Container(
+              child: SizedBox(
                 // height should be screen height * 0.7
                 height: _getWidgetHeight(),
                 child: InteractiveViewer(
                   transformationController: _transformationController,
-                  minScale: 1.0,
-                  maxScale: 5.0,
+                  minScale: 0.2,
+                  maxScale: 4.0,
                   // constrained: false,
                   boundaryMargin: _getBoundaryMargin(),
                   child: CustomPaint(
                     painter: picture == null
                         ? null
-                        : ZoomableMapPainter(picture!,
-                            _getInitialPictureScale(), offset, items, route),
+                        : ZoomableMapPainter(
+                            picture!,
+                            _getInitialPictureScale(),
+                            offset,
+                            items,
+                            route,
+                            shelfNodes),
                     child: Container(),
                   ),
                 ),
@@ -292,18 +259,18 @@ class _ZoomableMapState extends State<ZoomableMap> {
             Card(
               elevation: 2.0,
               // full width container
-              margin: EdgeInsets.all(16),
+              margin: const EdgeInsets.all(16),
               color: Theme.of(context).scaffoldBackgroundColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
                     CustomIcons.store(
                         size: 24, color: Theme.of(context).primaryColor),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       widget.shoppingList.store?.name ?? 'Store Map',
                       style: Theme.of(context).textTheme.headlineMedium,

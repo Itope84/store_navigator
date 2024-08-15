@@ -31,5 +31,5 @@ Future<List<Product>> fetchProducts(
 QueryResult<List<Product>> useGetProducts(String search, String? storeId) {
   return useQuery('products?search=$search&store_id=$storeId', (k) async {
     return await fetchProducts(search: search, storeId: storeId);
-  }, staleDuration: Duration(minutes: 3));
+  }, staleDuration: const Duration(minutes: 3));
 }

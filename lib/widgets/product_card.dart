@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:store_navigator/utils/data/product.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/widgets/product_qty.dart';
@@ -76,7 +75,7 @@ class _ProductCardState extends State<ProductCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 250,
       child: Card(
           elevation: 0,

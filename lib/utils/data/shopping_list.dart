@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:flutter_query/flutter_query.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:store_navigator/utils/api/products.dart';
 import 'package:store_navigator/utils/data/database.dart';
@@ -36,7 +35,7 @@ class ShoppingListItem {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
     data['product_id'] = product.id;
     data['shopping_list_id'] = shoppingListId;
@@ -100,7 +99,7 @@ class ShoppingList {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
     data['name'] = name;
     data['store_id'] = storeId;
@@ -138,7 +137,7 @@ class ShoppingList {
     FROM
       ${ShoppingListItem.tableName} sli
     LEFT JOIN
-      ${tableName} sl ON sl.id = sli.shopping_list_id
+      $tableName sl ON sl.id = sli.shopping_list_id
     ''';
 
   static String queryById = '''
@@ -165,6 +164,7 @@ class ShoppingList {
     print("db query resp: $response");
     print(uniqueProductIds);
 
+    // TODO: this might be breaking if api is not available
     final products = await fetchProducts(ids: uniqueProductIds);
     final productsMap =
         Map.fromEntries(products.map((p) => MapEntry(p.id!, p)));

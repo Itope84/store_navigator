@@ -1,11 +1,16 @@
 class Shelf {
   String? id;
-  String? mapNodeId;
+  late String mapNodeId;
   String? name;
   String? section;
   String? storeId;
 
-  Shelf({this.id, this.mapNodeId, this.name, this.section, this.storeId});
+  Shelf(
+      {this.id,
+      required this.mapNodeId,
+      this.name,
+      this.section,
+      this.storeId});
 
   Shelf.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -16,13 +21,13 @@ class Shelf {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
 
-    data['id'] = this.id;
-    data['map_node_id'] = this.mapNodeId;
-    data['name'] = this.name;
-    data['section'] = this.section;
-    data['store_id'] = this.storeId;
+    data['id'] = id;
+    data['map_node_id'] = mapNodeId;
+    data['name'] = name;
+    data['section'] = section;
+    data['store_id'] = storeId;
 
     return data;
   }

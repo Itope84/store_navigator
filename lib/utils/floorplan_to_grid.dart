@@ -140,8 +140,9 @@ class SvgToGridConverter {
       if (pathData != null) {
         final path = parseSvgPathData(pathData);
         // add path to paths by id attribute
-        if (element.getAttribute('id') != null)
+        if (element.getAttribute('id') != null) {
           paths.putIfAbsent(element.getAttribute('id')!, () => path);
+        }
 
         _markObstacles(path, grid, svgWidth, svgHeight);
       }
@@ -175,11 +176,9 @@ class SvgToGridConverter {
     }
   }
 
-  /**
-   * Marks obstacles on the grid by going through the pixels in the path bounding box and seeing if they are inside the path.
-   * This accounts for non-rectangular paths.
-   *
-   */
+  /// Marks obstacles on the grid by going through the pixels in the path bounding box and seeing if they are inside the path.
+  /// This accounts for non-rectangular paths.
+  ///
   void _markObstacles(Path path, Grid grid, double svgWidth, double svgHeight) {
     final bbox = path.getBounds();
     for (int y = bbox.top.floor(); y < bbox.bottom.ceil(); y++) {

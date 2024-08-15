@@ -1,13 +1,10 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:store_navigator/utils/api/route.dart';
 import 'package:store_navigator/utils/floorplan_to_grid.dart';
 import 'package:store_navigator/widgets/map_painter.dart';
-import 'package:xml/xml.dart';
 
 class StoreMap extends StatefulWidget {
   const StoreMap({super.key});
@@ -87,7 +84,7 @@ class _StoreMapState extends State<StoreMap> {
             ),
           )),
           if (isGeneratingRoute)
-            Positioned(child: CircularProgressIndicator(), top: 16, right: 16)
+            const Positioned(top: 16, right: 16, child: CircularProgressIndicator())
         ],
       ),
     );

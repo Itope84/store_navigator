@@ -6,7 +6,7 @@ Future<ShoppingList?> getShoppingListById(String id) async {
 }
 
 QueryResult<ShoppingList?> useShoppingList(String id) {
-  return useQuery('shopping-list-${id}', (k) async {
+  return useQuery('shopping-list-$id', (k) async {
     return await getShoppingListById(id);
   }, enabled: id.isNotEmpty);
 }

@@ -1,4 +1,3 @@
-import 'package:flutter_query/flutter_query.dart';
 import 'package:store_navigator/utils/data/shelf.dart';
 
 class Store {
@@ -34,7 +33,7 @@ class Store {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['address'] = address;
     data['floor_plan'] = floorPlan;
     data['id'] = id;

@@ -11,18 +11,20 @@ void main() async {
 
   runApp(
     QueryScope(
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Zoomable Map App',
       theme: createTheme(),
-      home: HomeScreen(),
+      home: const HomeScreen(),
     );
   }
 }
