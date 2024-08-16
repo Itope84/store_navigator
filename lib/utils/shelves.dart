@@ -1,6 +1,6 @@
-import 'dart:math';
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_drawing/path_drawing.dart';
 import 'package:store_navigator/utils/data/shelf.dart';
@@ -16,6 +16,15 @@ class ShelfNode {
   final Path path;
   final Shelf shelf;
   final List<ShoppingListItem> items;
+
+  Offset? _routeEnd;
+
+  set routeEnd(Offset offset) {
+    _routeEnd = offset;
+  }
+
+  Offset get routeEnd =>
+      _routeEnd != null ? _routeEnd! : path.getBounds().center;
 
   ShelfNode(this.id, this.path, this.shelf, {this.items = const []});
 
@@ -53,8 +62,6 @@ Future<List<ShelfNode>> getShelfNodes(
             items: shelfItems[element.getAttribute('id')] ?? []),
       )
       .toList();
-
-  print(nodes);
 
   return nodes;
 }

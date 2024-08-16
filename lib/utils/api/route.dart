@@ -18,16 +18,28 @@ Future<List<dynamic>> fetchRoute(Uri url) async {
   }
 }
 
+class RoutePair {
+  final String pathId;
+  final List<dynamic> route;
+
+  RoutePair(this.pathId, this.route);
+
+  RoutePair.fromJson(dynamic json)
+      : pathId = json[0],
+        route = json[1];
+}
+
 Future<List<dynamic>> fetchRouteBySectionId(String start, String end) async {
   final url =
       Uri.parse('http://192.168.1.108:8000/get-route?start=$start&end=$end');
   return await fetchRoute(url);
 }
 
-Future<List<dynamic>> fetchRoutesBySectionIds(List<String> sectionIds) async {
+Future<List<RoutePair>> fetchRoutesBySectionIds(List<String> sectionIds) async {
   final url = Uri.parse(
       'http://192.168.1.108:8000/get-traveling-routes?section_ids=${sectionIds.join(',')}');
-  return await fetchRoute(url);
+  final routes = await fetchRoute(url);
+  return routes.map((route) => RoutePair.fromJson(route)).toList();
 }
 
 Future<List<dynamic>> fetchRouteByPos(Offset start, Offset end) async {

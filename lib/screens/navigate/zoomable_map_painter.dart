@@ -6,12 +6,11 @@ class ZoomableMapPainter extends CustomPainter {
   final PictureInfo picture;
   final double initialScale;
   final Offset offset;
-  final List<Offset> items;
   final List<Offset> route;
   final List<ShelfNode> shelfNodes;
 
-  ZoomableMapPainter(this.picture, this.initialScale, this.offset, this.items,
-      this.route, this.shelfNodes);
+  ZoomableMapPainter(this.picture, this.initialScale, this.offset, this.route,
+      this.shelfNodes);
 
   void drawShelfName(Canvas canvas, ShelfNode shelfNode) {
     // get orientation of the shelf, if width > height, then it is horizontal
@@ -73,10 +72,10 @@ class ZoomableMapPainter extends CustomPainter {
     canvas.drawPicture(picture.picture);
 
     // Draw items
-    Paint itemPaint = Paint()..color = Colors.deepOrange;
-    for (var item in items) {
-      canvas.drawCircle(item, 10.0 / initialScale, itemPaint);
-    }
+    // Paint itemPaint = Paint()..color = Colors.deepOrange;
+    // for (var item in items) {
+    //   canvas.drawCircle(item, 10.0 / initialScale, itemPaint);
+    // }
 
     for (var shelfNode in shelfNodes) {
       drawShelfName(canvas, shelfNode);
