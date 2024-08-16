@@ -24,6 +24,12 @@ Future<List<dynamic>> fetchRouteBySectionId(String start, String end) async {
   return await fetchRoute(url);
 }
 
+Future<List<dynamic>> fetchRoutesBySectionIds(List<String> sectionIds) async {
+  final url = Uri.parse(
+      'http://192.168.1.108:8000/get-traveling-routes?section_ids=${sectionIds.join(',')}');
+  return await fetchRoute(url);
+}
+
 Future<List<dynamic>> fetchRouteByPos(Offset start, Offset end) async {
   String startStr = '${start.dx.toInt()},${start.dy.toInt()}';
   String endStr = '${end.dx.toInt()},${end.dy.toInt()}';

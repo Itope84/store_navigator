@@ -14,7 +14,7 @@ class ShoppingListItem {
   int qty;
   final String shoppingListId;
 
-  get productId => product.id;
+  String get productId => product.id!;
 
   ShoppingListItem(
       {String? id,
@@ -153,10 +153,10 @@ class ShoppingList {
         id != null ? queryById : '$query ORDER BY sl.updated_at DESC',
         id != null ? [id] : null);
 
+    // response gives us a response for each product in the shopping list. Meaning if there are 3 shopping lists with 3 products each, we get 9 responses.
+
     if (response.isEmpty) return [];
 
-    // TODO: temporary, remove when product is fetched from db
-    // TODO: axctually, the only reason we need products to be non-nullable is to generate a description. Instead add description to shopping list and generate it from the items on the list before savimng to db
     // fetch products from api, for each response.
     final uniqueProductIds =
         response.map((e) => "${e['product_id']}").toSet().toList();
@@ -164,7 +164,6 @@ class ShoppingList {
     print("db query resp: $response");
     print(uniqueProductIds);
 
-    // TODO: this might be breaking if api is not available
     final products = await fetchProducts(ids: uniqueProductIds);
     final productsMap =
         Map.fromEntries(products.map((p) => MapEntry(p.id!, p)));
@@ -178,6 +177,7 @@ class ShoppingList {
             if (acc.containsKey(id)) {
               acc[id]!.items!.add(ShoppingListItem(
                   id: e['item_id'] as String,
+                  // TODO: this might be breaking if api is not available, because of not-null enforcer (!). We need to throw an error from this entire fn if the api request fails, i.e productsMap doesn't contain some product id.
                   product: productsMap[e['product_id'] as String]!,
                   sectionId: e['section_id'] as String?,
                   qty: e['qty'] as int,

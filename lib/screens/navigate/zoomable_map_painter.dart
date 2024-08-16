@@ -73,7 +73,7 @@ class ZoomableMapPainter extends CustomPainter {
     canvas.drawPicture(picture.picture);
 
     // Draw items
-    Paint itemPaint = Paint()..color = Colors.red;
+    Paint itemPaint = Paint()..color = Colors.deepOrange;
     for (var item in items) {
       canvas.drawCircle(item, 10.0 / initialScale, itemPaint);
     }
@@ -85,7 +85,7 @@ class ZoomableMapPainter extends CustomPainter {
     // TODO: Draw route. A possibly complex algorithm to draw the route between items
     if (route.isNotEmpty) {
       Paint routePaint = Paint()
-        ..color = Colors.red
+        ..color = Colors.lightBlue
         ..strokeWidth = 5.0 / initialScale
         ..style = PaintingStyle.stroke;
 

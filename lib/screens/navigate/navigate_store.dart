@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:store_navigator/screens/navigate/zoomable_map_painter.dart';
 import 'package:store_navigator/utils/api/route.dart';
+import 'package:store_navigator/utils/api/shopping_list.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/utils/floorplan_to_grid.dart';
 import 'package:store_navigator/utils/icons.dart';
@@ -29,24 +32,20 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
 
   late Grid grid;
 
-  late List<ShelfNode> shelfNodes;
+  List<ShelfNode> shelfNodes = [];
+  List<ShelfNode> shoppingListShelfNodes = [];
 
   double scale = 1.0;
   Offset offset = Offset.zero;
   List<Offset> items = [];
   List<Offset> route = [];
 
-  // tuple (start, end) positions
   (Offset?, Offset?) positions = (null, null);
-
-  // Position lastTapped = Position.start;
 
   @override
   void initState() {
     super.initState();
     _loadSvg();
-
-    _getRoute();
 
     _loadShelves();
   }
@@ -60,12 +59,35 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
   final MAP_SCREEN_RATIO = 1.0;
 
   void _loadShelves() async {
-    final _shelfNodes = await getShelfNodes(
-        widget.shoppingList.store?.shelves ?? [], widget.assetName);
+    // TODO: loading state
+
+    // TODO: move this bit to a separate function
+    final productIds =
+        widget.shoppingList.items?.map((e) => e.productId).toList() ?? [];
+    final productsWithShelf = await getShoppingListProductsWithShelves(
+        widget.shoppingList.storeId, productIds);
+    final productIdToShelf = productsWithShelf.fold<Map<String, String>>(
+        {}, (map, p) => map..putIfAbsent(p.product.id!, () => p.sectionId));
+    // go through shoppinglist items and update their sectionId with the sectionId of the product
+    widget.shoppingList.items?.forEach((item) {
+      item.sectionId = productIdToShelf[item.productId] ?? item.sectionId;
+    });
+
+    final _shelfNodes =
+        await getShelfNodes(widget.shoppingList, widget.assetName);
 
     setState(() {
       shelfNodes = _shelfNodes;
+      shoppingListShelfNodes =
+          shelfNodes.where((s) => s.items.isNotEmpty).toList();
+
+      // TODO: this also shouldn't be here but /it's an expt and I'm getting tired
+      items =
+          shoppingListShelfNodes.map((s) => s.path.getBounds().center).toList();
     });
+
+    // TODO: handle more neatly maybe. Also loading state!
+    _getTravelingRoutes();
   }
 
   double _getWidgetHeight() {
@@ -208,6 +230,20 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
     });
   }
 
+  Future<void> _getTravelingRoutes() async {
+    final sectionIds =
+        shoppingListShelfNodes.map((s) => s.shelf.mapNodeId).toList();
+
+    final data = await fetchRoutesBySectionIds(sectionIds);
+
+    setState(() {
+      route = data
+          .expand((i) => i)
+          .map<Offset>((r) => Offset(r[1] / 1.0, r[0] / 1.0))
+          .toList();
+    });
+  }
+
   EdgeInsets _getBoundaryMargin() {
     if (picture == null) {
       return EdgeInsets.zero;
@@ -237,9 +273,8 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
                 height: _getWidgetHeight(),
                 child: InteractiveViewer(
                   transformationController: _transformationController,
-                  minScale: 0.2,
+                  minScale: 1.0,
                   maxScale: 4.0,
-                  // constrained: false,
                   boundaryMargin: _getBoundaryMargin(),
                   child: CustomPaint(
                     painter: picture == null
