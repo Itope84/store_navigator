@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:store_navigator/utils/api/products.dart';
+import 'package:store_navigator/utils/api/stores.dart';
 import 'package:store_navigator/utils/data/database.dart';
 import 'package:store_navigator/utils/data/product.dart';
 import 'package:store_navigator/utils/data/store.dart';
@@ -16,11 +17,14 @@ class ShoppingListItem {
 
   String get productId => product.id!;
 
+  bool found = false;
+
   ShoppingListItem(
       {String? id,
       required this.product,
       this.sectionId,
       this.qty = 1,
+      this.found = false,
       required this.shoppingListId})
       : id = id ?? "${DateTime.now().millisecondsSinceEpoch}";
 
@@ -30,6 +34,7 @@ class ShoppingListItem {
       product: Product.fromJson(json['product']),
       sectionId: json['section_id'],
       qty: json['qty'],
+      found: json['found'] == 1,
       shoppingListId: json['shopping_list_id'],
     );
   }
@@ -42,6 +47,7 @@ class ShoppingListItem {
     data['product'] = product.toJson();
     data['section_id'] = sectionId;
     data['qty'] = qty;
+    data['found'] = found ? 1 : 0;
     return data;
   }
 
@@ -53,6 +59,7 @@ class ShoppingListItem {
       shopping_list_id TEXT,
       section_id TEXT,
       qty INTEGER,
+      found INTEGER,
       FOREIGN KEY (shopping_list_id) REFERENCES ${ShoppingList.tableName}(id) ON DELETE CASCADE
     )
   ''';
@@ -67,6 +74,8 @@ class ShoppingList {
   DateTime? updatedAt;
 
   Store? store;
+
+  bool get isCompleted => items?.every((item) => item.found) ?? false;
 
   ShoppingList(
       {String? id,
@@ -133,6 +142,7 @@ class ShoppingList {
       sli.id as item_id,
       sli.product_id,
       sli.section_id,
+      sli.found,
       sli.qty
     FROM
       ${ShoppingListItem.tableName} sli
@@ -162,7 +172,9 @@ class ShoppingList {
         response.map((e) => "${e['product_id']}").toSet().toList();
 
     print("db query resp: $response");
-    print(uniqueProductIds);
+
+    // Fetch all stores from the api
+    final stores = await fetchStores();
 
     final products = await fetchProducts(ids: uniqueProductIds);
     final productsMap =
@@ -181,15 +193,19 @@ class ShoppingList {
                   product: productsMap[e['product_id'] as String]!,
                   sectionId: e['section_id'] as String?,
                   qty: e['qty'] as int,
+                  found: e['found'] == 1,
                   shoppingListId: id));
             } else {
               acc[id] = ShoppingList.fromJson(e)
+                ..store = stores
+                    .firstWhereOrNull((s) => s.id == e['store_id'] as String)
                 ..items = [
                   ShoppingListItem(
                       id: e['item_id'] as String,
                       product: productsMap[e['product_id'] as String]!,
                       sectionId: e['section_id'] as String?,
                       qty: e['qty'] as int,
+                      found: e['found'] == 1,
                       shoppingListId: id)
                 ];
             }
@@ -209,14 +225,11 @@ class ShoppingList {
 
     final json = toJson()..remove('items');
 
-    print(json);
-
     await db.insert(tableName, json,
         conflictAlgorithm: ConflictAlgorithm.replace);
 
     await Future.forEach<ShoppingListItem>(items ?? [], (item) async {
       final itemJson = item.toJson()..remove('product');
-      print(itemJson);
       await db.insert(ShoppingListItem.tableName, itemJson);
     });
   }

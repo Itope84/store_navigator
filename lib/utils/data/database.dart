@@ -35,7 +35,14 @@ class DatabaseHelper {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // TODO: implement any upgrade specific logic here
+    print(oldVersion);
+    print("newVersion: $newVersion");
+    if (oldVersion == 1) {
+      // add column found to shopping_list_items
+      // TODO: implement a version based changelog query inside each model class
+      // await db.execute(
+      //     'ALTER TABLE ${ShoppingListItem.tableName} ADD COLUMN found INTEGER');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {

@@ -17,6 +17,21 @@ class ShelfNode {
   final Shelf shelf;
   final List<ShoppingListItem> items;
 
+  final List<GlobalKey> _itemKeys = [];
+
+  List<GlobalKey> get itemKeys => _itemKeys;
+
+  GlobalKey getItemKey(ShoppingListItem item) {
+    return _itemKeys[items.indexOf(item)];
+  }
+
+  void setItemKeys() {
+    _itemKeys.clear();
+    for (var i = 0; i < items.length; i++) {
+      _itemKeys.add(GlobalKey());
+    }
+  }
+
   Offset? _routeEnd;
 
   set routeEnd(Offset offset) {
@@ -25,6 +40,8 @@ class ShelfNode {
 
   Offset get routeEnd =>
       _routeEnd != null ? _routeEnd! : path.getBounds().center;
+
+  bool get allItemsFound => items.every((item) => item.found);
 
   ShelfNode(this.id, this.path, this.shelf, {this.items = const []});
 
@@ -47,6 +64,8 @@ Future<List<ShelfNode>> getShelfNodes(
           (map, item) => map..putIfAbsent(item.sectionId!, () => []).add(item));
 
   final shelfMap = mapIdToShelf(shelves);
+
+  print(shelves);
 
   final nodes = document
       .findAllElements('path')

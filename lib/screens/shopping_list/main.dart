@@ -6,6 +6,7 @@ import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/utils/data/store.dart';
 import 'package:store_navigator/screens/select_store.dart';
 import 'package:store_navigator/screens/shopping_list/fake_search_input.dart';
+import 'package:store_navigator/utils/debouncer.dart';
 import 'package:store_navigator/widgets/shopping_list_item_tile.dart';
 import 'package:store_navigator/screens/navigate/navigate_store.dart';
 
@@ -25,10 +26,12 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
 
   ShoppingList? apiShoppingList;
 
+  final Debouncer debouncer = Debouncer(milliseconds: 500);
+
   @override
   void initState() {
     _store = widget.store;
-    shoppingList = ShoppingList(storeId: _store.id);
+    shoppingList = ShoppingList(storeId: _store.id)..store = _store;
 
     getShoppingListById(widget.id ?? '').then((list) {
       if (list != null) {
@@ -40,6 +43,18 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     });
 
     super.initState();
+  }
+
+  Future<void> saveToDb({bool immediate = false}) async {
+    if (immediate) {
+      debouncer.cancel();
+
+      return await shoppingList.saveToDb();
+    }
+
+    debouncer.run(() {
+      shoppingList.saveToDb();
+    });
   }
 
   addProduct(Product product) {
@@ -54,7 +69,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       }
     });
 
-    // TODO: debounce save to db
+    saveToDb();
   }
 
   reduceProduct(Product product) {
@@ -74,9 +89,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
       }
     });
 
-    print('item now ${item?.qty}');
-
-    // TODO: debounce save to db
+    saveToDb();
   }
 
   @override
@@ -113,6 +126,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                           onStoreSelected: (ctx, store) {
                             setState(() {
                               _store = store;
+                              shoppingList.store = store;
                               shoppingList.storeId = store.id;
                             });
 
@@ -211,6 +225,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                             padding: padding,
                             child: OutlinedButton(
                               onPressed: () {
+                                print(shoppingList.store);
                                 Navigator.of(context).push(MaterialPageRoute(
                                     builder: (ctx) => NavigateStoreScreen(
                                           shoppingList: shoppingList,
@@ -223,7 +238,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                             padding: padding,
                             child: FilledButton(
                               onPressed: () async {
-                                await shoppingList.saveToDb();
+                                await saveToDb(immediate: true);
 
                                 if (context.mounted) {
                                   Navigator.of(context).pop();
@@ -259,7 +274,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                                   .bodyMedium!
                                   .copyWith(color: Colors.grey[700]),
                             ),
-                          )
+                          ),
                         ]),
                   const SizedBox(height: 24),
                 ],

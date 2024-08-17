@@ -9,11 +9,14 @@ class ShoppingTripCard extends StatelessWidget {
   final ShoppingList shoppingList;
   final Function onEdit;
 
+  final void Function()? onNavigateComplete;
+
   const ShoppingTripCard(
       {required this.store,
       required this.shoppingList,
       required this.onEdit,
       super.key,
+      this.onNavigateComplete,
       this.isMainCard = false});
 
   final bool isMainCard;
@@ -70,10 +73,12 @@ class ShoppingTripCard extends StatelessWidget {
                         const SizedBox(width: 12),
                         FilledButton(
                           onPressed: () => {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (ctx) => NavigateStoreScreen(
-                                      shoppingList: shoppingList,
-                                    )))
+                            Navigator.of(context)
+                                .push(MaterialPageRoute(
+                                    builder: (ctx) => NavigateStoreScreen(
+                                          shoppingList: shoppingList,
+                                        )))
+                                .then((_) => onNavigateComplete?.call())
                           },
                           child: const Text('Navigate'),
                         ),

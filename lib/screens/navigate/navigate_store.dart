@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:store_navigator/screens/navigate/widgets/basket_icon.dart';
+import 'package:store_navigator/screens/navigate/widgets/map_bottom_nav.dart';
+import 'package:store_navigator/screens/navigate/widgets/map_gesture_handler.dart';
 import 'package:store_navigator/screens/navigate/zoomable_map_painter.dart';
 import 'package:store_navigator/utils/api/route.dart';
 import 'package:store_navigator/utils/api/shopping_list.dart';
@@ -11,6 +14,10 @@ import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/utils/floorplan_to_grid.dart';
 import 'package:store_navigator/utils/icons.dart';
 import 'package:store_navigator/utils/shelves.dart';
+
+List<GlobalKey> getAllShelfNodeClickables(List<ShelfNode> shelfNodes) {
+  return shelfNodes.expand((node) => node.itemKeys).toList();
+}
 
 class NavigateStoreScreen extends StatefulWidget {
   final ShoppingList shoppingList;
@@ -34,12 +41,15 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
   List<ShelfNode> shelfNodes = [];
   List<ShelfNode> shoppingListShelfNodes = [];
 
-  double scale = 1.0;
-  Offset offset = Offset.zero;
+  Offset? customStartLocation;
   List<Offset> items = [];
   List<Offset> route = [];
+  bool isLocating = false;
+  ShelfNode? selectedShelfNode;
 
-  (Offset?, Offset?) positions = (null, null);
+  List<GlobalKey> buttonKeys = [];
+
+  final GlobalKey recalculateButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -79,10 +89,16 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
       shelfNodes = shelfNodes_;
       shoppingListShelfNodes =
           shelfNodes.where((s) => s.items.isNotEmpty).toList();
+
+      for (var node in shoppingListShelfNodes) {
+        node.setItemKeys();
+      }
+
+      buttonKeys = shoppingListShelfNodes.map((_) => GlobalKey()).toList();
     });
 
     // TODO: handle more neatly maybe. Also loading state!
-    _getTravelingRoutes();
+    _getTravelingRoutes(null);
   }
 
   double _getWidgetHeight() {
@@ -104,81 +120,27 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
 
     final pictureInfo = await vg.loadPicture(SvgStringLoader(svgString), null);
 
-    // final document = XmlDocument.parse(svgString);
     setState(() {
       picture = pictureInfo;
-      // converter = SvgToGridConverter(document, (pictureInfo.size.width).ceil(),
-      //     (pictureInfo.size.height).ceil());
-      // grid = generateGrid(svgString);
     });
-
-    // print(_getSectionAisleSideMidpoint('section_0'));
   }
 
-  Future<void> _onTapUp(TapUpDetails details) async {
-    final Matrix4 inverseMatrix =
-        Matrix4.inverted(_transformationController.value);
-    final Offset untransformedOffset =
-        MatrixUtils.transformPoint(inverseMatrix, details.localPosition);
-
-    Offset position = Offset(
-        untransformedOffset.dx * 1 / _getInitialPictureScale(),
-        untransformedOffset.dy * 1 / _getInitialPictureScale());
+  Future<void> _onTapUp(Offset position) async {
+    if (!isLocating) return;
 
     setState(() {
-      items.add(position);
+      customStartLocation = position;
     });
-
-    // var (start, end) = positions;
-
-    // if (start == null) {
-    //   start = position;
-    // } else if (end == null) {
-    //   end = position;
-    // } else {
-    //   start = Offset(end.dx, end.dy);
-    //   end = position;
-    // }
-
-    // setState(() {
-    //   positions = (start, end);
-    //   // add positions to items
-    //   if (start != null) {
-    //     items.clear();
-    //     items.add(start);
-    //   }
-    //   if (end != null) {
-    //     items.add(end);
-    //   }
-    // });
-
-    // if (end != null) {
-    //   final data = await fetchRouteByPos(start, end);
-    //   // TODO: errors when you tap beyond boundaries of map and there's no route returned (empty list). Handle this gracefully, by not registering the tap
-
-    //   setState(() {
-    //     route.clear();
-    //     route =
-    //         data.map<Offset>((r) => Offset(r[1] / 1.0, r[0] / 1.0)).toList();
-
-    //     print(data[0]);
-    //   });
-    // }
   }
 
-  // Future<void> _getRoute() async {
-  //   final data = await fetchRouteBySectionId('section_entrance', 'section_12');
+  Future<void> _getTravelingRoutes(Offset? startLocation) async {
+    // Only fetch the route through shelves for which all items haven't been found
+    final sectionIds = shoppingListShelfNodes
+        .where((s) => s.allItemsFound == false)
+        .map((s) => s.shelf.mapNodeId)
+        .toList();
 
-  //   setState(() {
-  //     route = data.map<Offset>((r) => Offset(r[1] / 1.0, r[0] / 1.0)).toList();
-  //   });
-  // }
-
-  Future<void> _getTravelingRoutes() async {
-    final sectionIds =
-        shoppingListShelfNodes.map((s) => s.shelf.mapNodeId).toList();
-
-    final data = await fetchRoutesBySectionIds(sectionIds);
+    final data = await fetchRoutesBySectionIds(sectionIds, startLocation);
 
     final idToRoute = data.fold<Map<String, List<dynamic>>>(
         {}, (map, r) => map..putIfAbsent(r.pathId, () => r.route));
@@ -191,19 +153,9 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
           : node.path.getBounds().center;
     }
 
-    // final sectionBasketLocations = shoppingListShelfNodes
-    //     .map((s) => (idToRoute[s.shelf.mapNodeId] ?? []).lastOrNull)
-    //     .toList();
-
     final expandedRoute = data.expand((r) => r.route).toList();
 
-    // TODO: This contains multiple routes. The ending point each route is the aisle side midpoint of the section. We can use these to determine where to place the basket icon on the map (instead of what we currently do which is just placing it in the center of the section)
-
     setState(() {
-      // items = sectionBasketLocations
-      //     .map((r) => Offset(r[1] / 1.0, r[0] / 1.0))
-      //     .toList();
-
       route = expandedRoute
           .map<Offset>((r) => Offset(r[1] / 1.0, r[0] / 1.0))
           .toList();
@@ -235,46 +187,90 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
             ? Container()
             : Stack(
                 children: [
-                  GestureDetector(
-                    // TODO: this temporarily shows adding items to the map by tapping. We want to actually generate the items on the map. To do this, we need to have an icon toolbar from which the user can select a starting location and tap on the screen and we recompute the route
-                    onTapUp: _onTapUp,
-                    child: SizedBox(
-                      // height should be screen height * 0.7
-                      height: _getWidgetHeight(),
-                      child: InteractiveViewer(
-                          transformationController: _transformationController,
-                          minScale: 1.0,
-                          maxScale: 4.0,
-                          boundaryMargin: _getBoundaryMargin(),
-                          child: CustomPaint(
-                              painter: ZoomableMapPainter(
-                                  picture!,
-                                  initialScale,
-                                  offset,
-                                  // items,
-                                  route,
-                                  shelfNodes),
-                              child: OverflowBox(
-                                alignment: Alignment.topLeft,
-                                maxWidth: picture!.size.width * initialScale,
-                                child: Stack(
-                                  children: [
-                                    ...shoppingListShelfNodes
-                                        .map((node) => Positioned(
-                                              // The -12 is a hack, for some reason, the item gets position slightly off, this is to place them directly within the route
-                                              left: (node.routeEnd.dx *
-                                                      initialScale) -
-                                                  12,
-                                              top: (node.routeEnd.dy *
-                                                      initialScale) -
-                                                  12,
-                                              child: BasketIcon(
-                                                itemCount: node.items.length,
+                  SizedBox(
+                    // height should be screen height * 0.7
+                    height: _getWidgetHeight(),
+                    child: MapGestureHandler(
+                      keys: [
+                        ...buttonKeys,
+                        ...getAllShelfNodeClickables(shelfNodes),
+                        recalculateButtonKey
+                      ],
+                      onTapUp: (position) => _onTapUp(position),
+                      initialScale: _getInitialPictureScale(),
+                      boundaryMargin: _getBoundaryMargin(),
+                      child: CustomPaint(
+                        painter: ZoomableMapPainter(
+                            picture!, initialScale, route, shelfNodes),
+                        child: OverflowBox(
+                          alignment: Alignment.topLeft,
+                          maxWidth: picture!.size.width * initialScale,
+                          child: Stack(
+                            children: [
+                              if (customStartLocation != null)
+                                Positioned(
+                                  // It's uncertain where this 12 comes from, but it's a hack to place the item in the center of the tap
+                                  top: customStartLocation!.dy * initialScale -
+                                      12,
+                                  left: customStartLocation!.dx * initialScale -
+                                      (isLocating ? 90 / 2 : 12),
+                                  child: Column(
+                                    children: [
+                                      Icon(Icons.location_pin,
+                                          color:
+                                              Theme.of(context).primaryColor),
+                                      if (isLocating)
+                                        FilledButton(
+                                            key: recalculateButtonKey,
+                                            style: const ButtonStyle(
+                                              fixedSize: WidgetStatePropertyAll(
+                                                  Size.fromWidth(90)),
+                                              padding: WidgetStatePropertyAll(
+                                                EdgeInsets.symmetric(
+                                                    horizontal: 4),
                                               ),
-                                            )),
-                                  ],
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              textStyle: WidgetStatePropertyAll(
+                                                  TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 14)),
+                                            ),
+                                            onPressed: () {
+                                              isLocating = false;
+                                              _getTravelingRoutes(
+                                                  customStartLocation);
+                                            },
+                                            child: const Text('Recalculate'))
+                                    ],
+                                  ),
                                 ),
-                              ))),
+                              ...shoppingListShelfNodes.mapIndexed(
+                                (index, node) => BasketIcon(
+                                  buttonKey: buttonKeys[index],
+                                  shelfNode: node,
+                                  initialScale: initialScale,
+                                  showDetails: selectedShelfNode == node,
+                                  onItemFound: (item) {
+                                    setState(() {
+                                      item.found = !item.found;
+                                      widget.shoppingList.saveToDb();
+                                    });
+                                  },
+                                  onTap: () {
+                                    setState(() {
+                                      selectedShelfNode =
+                                          selectedShelfNode == node
+                                              ? null
+                                              : node;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   Card(
@@ -298,6 +294,18 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
                           )
                         ],
                       ),
+                    ),
+                  ),
+                  Positioned(
+                    width: MediaQuery.of(context).size.width,
+                    bottom: 16,
+                    child: MapBottomNav(
+                      isLocating: isLocating,
+                      onLocateClick: () {
+                        setState(() {
+                          isLocating = !isLocating;
+                        });
+                      },
                     ),
                   )
                 ],

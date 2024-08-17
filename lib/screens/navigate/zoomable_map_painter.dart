@@ -5,12 +5,11 @@ import 'package:store_navigator/utils/shelves.dart';
 class ZoomableMapPainter extends CustomPainter {
   final PictureInfo picture;
   final double initialScale;
-  final Offset offset;
   final List<Offset> route;
   final List<ShelfNode> shelfNodes;
 
-  ZoomableMapPainter(this.picture, this.initialScale, this.offset, this.route,
-      this.shelfNodes);
+  ZoomableMapPainter(
+      this.picture, this.initialScale, this.route, this.shelfNodes);
 
   void drawShelfName(Canvas canvas, ShelfNode shelfNode) {
     // get orientation of the shelf, if width > height, then it is horizontal
@@ -64,7 +63,7 @@ class ZoomableMapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.save();
-    canvas.translate(offset.dx, offset.dy);
+    canvas.translate(0, 0);
 
     canvas.scale(initialScale);
 

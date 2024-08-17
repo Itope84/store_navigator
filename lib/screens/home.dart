@@ -16,6 +16,11 @@ class HomeScreen extends HookWidget {
     final queryResponse = useShoppingLists();
     final shoppingLists = queryResponse.state.data;
 
+    List<ShoppingList> completedShoppingLists =
+        shoppingLists?.where((list) => list.isCompleted).toList() ?? [];
+    List<ShoppingList> pendingShoppingLists =
+        shoppingLists?.where((list) => !list.isCompleted).toList() ?? [];
+
     final storesResp = useGetStores();
     final stores = storesResp.state.data;
 
@@ -114,50 +119,56 @@ class HomeScreen extends HookWidget {
                   ...(shoppingLists != null && shoppingLists.isNotEmpty
                       ? [
                           const SizedBox(height: 10),
-                          ShoppingTripCard(
-                            store: shoppingLists[0].store!,
-                            shoppingList: shoppingLists[0],
-                            isMainCard: true,
-                            onEdit: () => editShoppingList(shoppingLists[0]),
-                          ),
+                          if (pendingShoppingLists.isNotEmpty)
+                            ShoppingTripCard(
+                              store: pendingShoppingLists[0].store!,
+                              shoppingList: pendingShoppingLists[0],
+                              isMainCard: true,
+                              onNavigateComplete: () => queryResponse.refetch(),
+                              onEdit: () =>
+                                  editShoppingList(pendingShoppingLists[0]),
+                            ),
 
                           // TODO: change this page to the "all lists page"? i.e. show all lists in the isMainCard: true format so there's no need for a separate shopping lists page
-                          if (shoppingLists.length > 1)
+                          if (pendingShoppingLists.length > 1)
                             SizedBox(
                               height: 160,
                               child: ListView.builder(
-                                itemCount: shoppingLists.length - 1,
+                                itemCount: pendingShoppingLists.length - 1,
                                 scrollDirection: Axis.horizontal,
                                 itemBuilder: (ctx, index) => SizedBox(
                                   width: 200,
                                   child: ShoppingTripCard(
-                                      store: shoppingLists[index + 1].store!,
-                                      shoppingList: shoppingLists[index + 1],
+                                      store: pendingShoppingLists[index + 1]
+                                          .store!,
+                                      shoppingList:
+                                          pendingShoppingLists[index + 1],
                                       onEdit: () => editShoppingList(
-                                          shoppingLists[index + 1])),
+                                          pendingShoppingLists[index + 1])),
                                 ),
                               ),
                             ),
                           const SizedBox(height: 40),
-                          // Text('Past Shopping Trips',
-                          //     style: Theme.of(context).textTheme.titleLarge),
-                          // const SizedBox(height: 10),
-                          // Container(
-                          //   height: 160,
-                          //   child: ListView(
-                          //     scrollDirection: Axis.horizontal,
-                          //     children: [
-                          //       Container(
-                          //         width: 200,
-                          //         child: ShoppingTripCard(),
-                          //       ),
-                          //       Container(
-                          //         width: 200,
-                          //         child: ShoppingTripCard(),
-                          //       ),
-                          //     ],
-                          //   ),
-                          // ),
+                          if (completedShoppingLists.isNotEmpty)
+                            Text('Past Shopping Trips',
+                                style: Theme.of(context).textTheme.titleLarge),
+                          const SizedBox(height: 10),
+
+                          Container(
+                            height: 160,
+                            child: ListView.builder(
+                              itemCount: completedShoppingLists.length,
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (ctx, index) => SizedBox(
+                                width: 200,
+                                child: ShoppingTripCard(
+                                    store: completedShoppingLists[index].store!,
+                                    shoppingList: completedShoppingLists[index],
+                                    onEdit: () => editShoppingList(
+                                        completedShoppingLists[index])),
+                              ),
+                            ),
+                          ),
                         ]
                       : [
                           const Padding(
