@@ -49,6 +49,8 @@ dependencies:
   cached_network_image: ^3.3.1
   flutter_cache_manager: ^3.3.3
   easy_debounce: ^2.0.3
+  google_ml_kit: ^0.18.0
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

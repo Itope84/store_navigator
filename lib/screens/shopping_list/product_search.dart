@@ -74,13 +74,14 @@ class _ProductSearchState extends State<ProductSearch> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // TODO: the scan to input pill
-            Text(
-              '${products.length} results for $search',
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineSmall!
-                  .copyWith(fontWeight: FontWeight.w900),
-            ),
+            if (search.isNotEmpty)
+              Text(
+                '${products.length} results for $search',
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineSmall!
+                    .copyWith(fontWeight: FontWeight.w900),
+              ),
             const SizedBox(height: 12),
             Expanded(
                 child: GridView.builder(

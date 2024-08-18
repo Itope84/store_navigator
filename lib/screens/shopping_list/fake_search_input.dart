@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:store_navigator/screens/shopping_list/scan_input.dart';
 
 class ShoppingListFakeSearch extends StatelessWidget {
   final Function() onTap;
@@ -27,6 +28,7 @@ class ShoppingListFakeSearch extends StatelessWidget {
               child: IconButton.filled(
                   onPressed: () {
                     print('tapped the scanner');
+                    selectImage(context);
                   },
                   iconSize: 20,
                   style: ButtonStyle(

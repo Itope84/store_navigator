@@ -14,9 +14,13 @@ Widget getSvgIcon(String path, {double? size, Color? color}) {
 class CustomIcons {
   static Widget home({double? size, Color? color}) =>
       getSvgIcon('assets/icons/home.svg', size: size, color: color);
+
   static Widget list({double? size, Color? color}) =>
       getSvgIcon('assets/icons/list.svg', size: size, color: color);
-  // store
+
   static Widget store({double? size, Color? color}) =>
       getSvgIcon('assets/icons/store.svg', size: size, color: color);
+
+  static Widget locationPin({double? size, Color? color}) =>
+      getSvgIcon('assets/icons/location.svg', size: size, color: color);
 }

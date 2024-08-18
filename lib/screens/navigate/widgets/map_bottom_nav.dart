@@ -53,8 +53,7 @@ class MapBottomNav extends StatelessWidget {
                             ),
                             child: Container(
                               padding: const EdgeInsets.all(4),
-                              child: Icon(
-                                Icons.location_pin,
+                              child: CustomIcons.locationPin(
                                 color:
                                     isLocating ? Colors.white : Colors.black87,
                               ),

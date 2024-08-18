@@ -209,14 +209,14 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
                             children: [
                               if (customStartLocation != null)
                                 Positioned(
-                                  // It's uncertain where this 12 comes from, but it's a hack to place the item in the center of the tap
+                                  // We have to offset the location by widget width / 2 to allow the item to be centrally positioned
                                   top: customStartLocation!.dy * initialScale -
                                       12,
                                   left: customStartLocation!.dx * initialScale -
-                                      (isLocating ? 90 / 2 : 12),
+                                      (isLocating ? 90 / 2 : 15),
                                   child: Column(
                                     children: [
-                                      Icon(Icons.location_pin,
+                                      CustomIcons.locationPin(
                                           color:
                                               Theme.of(context).primaryColor),
                                       if (isLocating)
