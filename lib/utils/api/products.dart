@@ -10,7 +10,6 @@ Future<List<Product>> fetchProducts(
     return [];
   }
 
-  print('fetching products');
   // TODO: .env baseurl
   final url = Uri.parse(
       "http://192.168.1.108:8000/products?search=$search&ids=${ids?.join(',') ?? ''}&store_id=${storeId ?? ''}");
@@ -23,8 +22,34 @@ Future<List<Product>> fetchProducts(
       return [];
     }
   } catch (e) {
-    print('Error: $e');
+    // TODO handle error
     return [];
+  }
+}
+
+Future<Map<String, List<Product>>> bulkSearchProducts(
+    {required String multiLineQuery, String? storeId}) async {
+  final url = Uri.parse(
+      "http://192.168.1.108:8000/products/bulk-search?query=$multiLineQuery&store_id=${storeId ?? ''}");
+  try {
+    final response = await get(url);
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      return data.map((key, value) => MapEntry(
+          "$key",
+          (value as List)
+              .map<Product>((product) => Product.fromJson(product))
+              .toList()));
+    } else {
+      return {};
+    }
+  } catch (e) {
+    print(e);
+    // TODO handle error
+    return {};
   }
 }
 

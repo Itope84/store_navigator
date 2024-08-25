@@ -10,6 +10,8 @@ class RoundedMaterialTextFormField extends StatelessWidget {
   final bool disabled, obscureText, filled, isClearable;
   final FocusNode? focus, nextFocus;
   final TextEditingController? controller;
+  final int? minLines;
+  final int? maxLines;
 
   const RoundedMaterialTextFormField({
     super.key,
@@ -27,6 +29,8 @@ class RoundedMaterialTextFormField extends StatelessWidget {
     this.isClearable = false,
     this.obscureText = false,
     this.controller,
+    this.minLines,
+    this.maxLines,
     required this.hintText,
   });
   @override
@@ -39,6 +43,8 @@ class RoundedMaterialTextFormField extends StatelessWidget {
       validator: validator,
       focusNode: focus,
       obscureText: obscureText,
+      minLines: minLines,
+      maxLines: maxLines,
       textInputAction: textInputAction ??
           (nextFocus != null ? TextInputAction.next : TextInputAction.done),
       onFieldSubmitted: (v) {
@@ -46,9 +52,13 @@ class RoundedMaterialTextFormField extends StatelessWidget {
           FocusScope.of(context).requestFocus(nextFocus);
         }
       },
-      keyboardType: keyboardType ?? TextInputType.text,
+      keyboardType: keyboardType ??
+          (minLines != null && minLines != 1
+              ? TextInputType.multiline
+              : TextInputType.text),
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 0),
+        contentPadding: EdgeInsets.symmetric(
+            horizontal: 18, vertical: minLines != null ? 8 : 0),
         hintText: hintText,
         hintStyle: const TextStyle(height: 3),
         prefixIcon: prefixIcon,

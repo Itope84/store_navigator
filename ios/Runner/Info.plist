@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>This app uses photos for extracting text from images</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app uses photos for extracting text from images</string>
 </dict>
 </plist>

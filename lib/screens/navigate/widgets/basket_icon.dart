@@ -9,6 +9,7 @@ class BasketIcon extends StatelessWidget {
   final GlobalKey buttonKey;
   final void Function() onTap;
   final void Function(ShoppingListItem item) onItemFound;
+  final void Function(Offset location) onLocateHere;
 
   const BasketIcon(
       {super.key,
@@ -17,16 +18,21 @@ class BasketIcon extends StatelessWidget {
       required this.initialScale,
       this.showDetails = false,
       required this.onItemFound,
-      required this.onTap});
+      required this.onTap,
+      required this.onLocateHere});
 
   @override
   Widget build(BuildContext context) {
     const cardWidth = 150.0;
 
+    Offset location = Offset(
+        (shelfNode.routeEnd.dx * initialScale) - (cardWidth / 2),
+        (shelfNode.routeEnd.dy * initialScale) - 12);
+
     return Positioned(
         // The -12 is a hack, for some reason, the item gets position slightly off, this is to place them directly within the route
-        left: (shelfNode.routeEnd.dx * initialScale) - (cardWidth / 2),
-        top: (shelfNode.routeEnd.dy * initialScale) - 12,
+        left: location.dx,
+        top: location.dy,
         child: Stack(
           alignment: Alignment.topCenter,
           children: [
@@ -84,7 +90,24 @@ class BasketIcon extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                              )
+                              ),
+                              OutlinedButton(
+                                  key: shelfNode.locateButtonKey,
+                                  style: const ButtonStyle(
+                                    fixedSize: WidgetStatePropertyAll(
+                                        Size.fromWidth(90)),
+                                    padding: WidgetStatePropertyAll(
+                                      EdgeInsets.symmetric(horizontal: 4),
+                                    ),
+                                    visualDensity: VisualDensity.compact,
+                                    textStyle: WidgetStatePropertyAll(
+                                        TextStyle(fontSize: 14)),
+                                  ),
+                                  onPressed: () {
+                                    onLocateHere(shelfNode.routeEnd);
+                                    onTap();
+                                  },
+                                  child: const Text('Put me here'))
                             ],
                           ),
                         ),

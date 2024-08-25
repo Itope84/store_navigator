@@ -65,7 +65,7 @@ class _MapGestureHandlerState extends State<MapGestureHandler> {
     }
 
     if (onTap != null) {
-      onTap!();
+      onTap();
     } else {
       widget.onTapUp(position);
     }

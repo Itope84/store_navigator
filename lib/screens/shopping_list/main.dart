@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:store_navigator/screens/shopping_list/product_search.dart';
+import 'package:store_navigator/screens/shopping_list/scan_input.dart';
+import 'package:store_navigator/screens/shopping_list/widgets/bulk_search_results.dart';
+import 'package:store_navigator/screens/shopping_list/widgets/shopping_list_text.dart';
 import 'package:store_navigator/utils/api/shopping_list.dart';
 import 'package:store_navigator/utils/data/product.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/utils/data/store.dart';
 import 'package:store_navigator/screens/select_store.dart';
-import 'package:store_navigator/screens/shopping_list/fake_search_input.dart';
+import 'package:store_navigator/screens/shopping_list/widgets/fake_search_input.dart';
 import 'package:store_navigator/utils/debouncer.dart';
 import 'package:store_navigator/widgets/shopping_list_item_tile.dart';
 import 'package:store_navigator/screens/navigate/navigate_store.dart';
@@ -14,7 +17,10 @@ class ShoppingListScreen extends StatefulWidget {
   final String? id;
   final Store store;
 
-  const ShoppingListScreen({this.id, required this.store, super.key});
+  final Function()? onPop;
+
+  const ShoppingListScreen(
+      {this.id, required this.store, this.onPop, super.key});
 
   @override
   State<ShoppingListScreen> createState() => _ShoppingListScreenState();
@@ -25,6 +31,8 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   late ShoppingList shoppingList;
 
   ShoppingList? apiShoppingList;
+
+  String shoppingListText = '';
 
   final Debouncer debouncer = Debouncer(milliseconds: 500);
 
@@ -75,8 +83,6 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
   reduceProduct(Product product) {
     final item = shoppingList.findItem(product);
 
-    print('reducing product, from ${item?.qty}');
-
     setState(() {
       if (item == null) {
         return;
@@ -101,185 +107,235 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
         toolbarHeight: 40,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
-      body: widget.id != null &&
-              // TODO: better loading checks
-              apiShoppingList == null
-          ? const Center(
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: CircularProgressIndicator(),
-              ),
-            )
-          : Container(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    child: GestureDetector(
-                      onTap: () {
-                        // TODO:  pass a "onChangeStore" param to this widget
-                        showSelectStore(
-                          context,
-                          selected: _store,
-                          onStoreSelected: (ctx, store) {
-                            setState(() {
-                              _store = store;
-                              shoppingList.store = store;
-                              shoppingList.storeId = store.id;
-                            });
+      body: PopScope(
+        onPopInvoked: (_) => widget.onPop?.call(),
+        child: widget.id != null &&
+                // TODO: better loading checks
+                apiShoppingList == null
+            ? const Center(
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            : Container(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      child: GestureDetector(
+                        onTap: () {
+                          // TODO:  pass a "onChangeStore" param to this widget
+                          showSelectStore(
+                            context,
+                            selected: _store,
+                            onStoreSelected: (ctx, store) {
+                              setState(() {
+                                _store = store;
+                                shoppingList.store = store;
+                                shoppingList.storeId = store.id;
+                              });
 
-                            Navigator.of(ctx).pop();
-                          },
-                        );
-                      },
-                      child: Card(
-                        elevation: 4,
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text("Selected store",
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall!
-                                          .copyWith(
-                                              color: Theme.of(context)
-                                                  .primaryColor,
-                                              fontWeight: FontWeight.w700)),
-                                  const SizedBox(width: 8),
-                                  Icon(
-                                    Icons.edit,
-                                    size: 14,
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                _store.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineMedium!
-                                    .copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFF3B4254)),
-                              )
-                            ],
+                              Navigator.of(ctx).pop();
+                            },
+                          );
+                        },
+                        child: Card(
+                          elevation: 4,
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text("Selected store",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall!
+                                            .copyWith(
+                                                color: Theme.of(context)
+                                                    .primaryColor,
+                                                fontWeight: FontWeight.w700)),
+                                    const SizedBox(width: 8),
+                                    Icon(
+                                      Icons.edit,
+                                      size: 14,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  _store.name,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium!
+                                      .copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF3B4254)),
+                                )
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Padding(
-                    padding: padding,
-                    child: Text(
-                      "Shopping List",
-                      style: Theme.of(context).textTheme.headlineLarge,
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: padding,
+                      child: Text(
+                        "Shopping List",
+                        style: Theme.of(context).textTheme.headlineLarge,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Padding(
-                    padding: padding,
-                    child: ShoppingListFakeSearch(
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (c) => ProductSearch(
-                                  storeId: _store.id,
-                                  shoppingList: shoppingList,
-                                  addProduct: addProduct,
-                                  removeProduct: reduceProduct,
-                                )));
-                      },
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: padding,
+                      child: ShoppingListFakeSearch(
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (c) => ProductSearch(
+                                    storeId: _store.id,
+                                    shoppingList: shoppingList,
+                                    addProduct: addProduct,
+                                    removeProduct: reduceProduct,
+                                  )));
+                        },
+                        onScan: () {
+                          selectImage(
+                            context,
+                            shoppingList,
+                            addProduct,
+                            reduceProduct,
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  ...((shoppingList.items ?? []).isNotEmpty
-                      ? [
-                          Expanded(
-                              child: ListView(
-                            children: [
-                              ...shoppingList.items!
-                                  .map((item) => ShoppingListItemTile(
-                                        item,
-                                        onReduceProduct: () {
-                                          reduceProduct(item.product);
-                                        },
-                                        onAddProduct: () {
-                                          addProduct(item.product);
-                                        },
-                                      ))
-                            ],
-                          )),
-                          const SizedBox(height: 18),
-                          Padding(
-                            padding: padding,
-                            child: OutlinedButton(
-                              onPressed: () {
-                                print(shoppingList.store);
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => NavigateStoreScreen(
+                    SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Padding(
+                          padding: padding,
+                          child: TextButton(
+                            style: ButtonStyle(
+                              // fixedSize:
+                              //     WidgetStatePropertyAll(Size.fromWidth(90)),
+                              // padding: WidgetStatePropertyAll(
+                              //   EdgeInsets.symmetric(horizontal: 4),
+                              // ),
+                              visualDensity: VisualDensity.compact,
+                              textStyle: WidgetStatePropertyAll(TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontSize: 16)),
+                            ),
+                            child: const Text("Or paste shopping list"),
+                            onPressed: () {
+                              openShoppingListTextInput(context).then((text) {
+                                if (text != null && text.isNotEmpty) {
+                                  showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      builder: (context) {
+                                        return BulkSearchResults(
                                           shoppingList: shoppingList,
-                                        )));
-                              },
-                              child: const Text('Navigate'),
-                            ),
-                          ),
-                          Padding(
-                            padding: padding,
-                            child: FilledButton(
-                              onPressed: () async {
-                                await saveToDb(immediate: true);
-
-                                if (context.mounted) {
-                                  Navigator.of(context).pop();
+                                          searchText: text,
+                                          addProduct: addProduct,
+                                          removeProduct: reduceProduct,
+                                        );
+                                      });
                                 }
-                              },
-                              child: const Text('Done'),
-                            ),
+                              });
+                            },
                           ),
-                          const SizedBox(height: 18),
-                        ]
-                      : [
-                          Center(
-                            child: Padding(
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    ...((shoppingList.items ?? []).isNotEmpty
+                        ? [
+                            Expanded(
+                                child: ListView(
+                              children: [
+                                ...shoppingList.items!
+                                    .map((item) => ShoppingListItemTile(
+                                          item,
+                                          onReduceProduct: () {
+                                            reduceProduct(item.product);
+                                          },
+                                          onAddProduct: () {
+                                            addProduct(item.product);
+                                          },
+                                        ))
+                              ],
+                            )),
+                            const SizedBox(height: 18),
+                            Padding(
                               padding: padding,
-                              child: SizedBox(
-                                width: 180,
-                                height: 180,
-                                child: Image.asset(
-                                    'assets/empty_shopping_basket.png'),
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  print(shoppingList.store);
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (ctx) => NavigateStoreScreen(
+                                            shoppingList: shoppingList,
+                                          )));
+                                },
+                                child: const Text('Navigate'),
                               ),
                             ),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Padding(
-                            padding: padding,
-                            child: Text(
-                              "Your shopping list is empty. Add new items by searching or scanning above",
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium!
-                                  .copyWith(color: Colors.grey[700]),
+                            Padding(
+                              padding: padding,
+                              child: FilledButton(
+                                onPressed: () async {
+                                  await saveToDb(immediate: true);
+
+                                  if (context.mounted) {
+                                    Navigator.of(context).pop();
+                                  }
+                                },
+                                child: const Text('Done'),
+                              ),
                             ),
-                          ),
-                        ]),
-                  const SizedBox(height: 24),
-                ],
+                            const SizedBox(height: 18),
+                          ]
+                        : [
+                            Center(
+                              child: Padding(
+                                padding: padding,
+                                child: SizedBox(
+                                  width: 180,
+                                  height: 180,
+                                  child: Image.asset(
+                                      'assets/empty_shopping_basket.png'),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            Padding(
+                              padding: padding,
+                              child: Text(
+                                "Your shopping list is empty. Add new items by searching or scanning above",
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium!
+                                    .copyWith(color: Colors.grey[700]),
+                              ),
+                            ),
+                          ]),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }

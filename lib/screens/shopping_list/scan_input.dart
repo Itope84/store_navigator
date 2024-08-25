@@ -1,8 +1,15 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:store_navigator/screens/shopping_list/widgets/bulk_search_results.dart';
+import 'package:store_navigator/utils/api/products.dart';
+import 'package:store_navigator/utils/data/product.dart';
+import 'package:store_navigator/utils/data/shopping_list.dart';
+import 'package:store_navigator/widgets/bottom_sheet_appbar.dart';
 
 Future<Uint8List?> getImageBytesFromGallery() async {
   final pickedFile = await ImagePicker().pickImage(
@@ -28,74 +35,149 @@ Future<Uint8List?> getImageBytesFromCamera() async {
   return null;
 }
 
-void showExtractedText(BuildContext context, Uint8List imageBytes) {
+void showExtractedText(
+    BuildContext context,
+    Uint8List imageBytes,
+    ShoppingList shoppingList,
+    Function(Product) addProduct,
+    Function(Product) removeProduct) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     builder: (context) {
-      return ExtractedTextScreen(imageBytes: imageBytes);
+      return ExtractedTextScreen(
+          imageBytes: imageBytes,
+          shoppingList: shoppingList,
+          addProduct: addProduct,
+          removeProduct: removeProduct);
     },
   );
 }
 
-Future<void> selectImage(BuildContext context) async {
+Future<void> selectImage(BuildContext context, ShoppingList shoppingList,
+    Function(Product) addProduct, Function(Product) removeProduct) async {
   Uint8List? fileBytes;
+
+  void showModal(Uint8List? fileBytes) {
+    if (fileBytes != null && context.mounted) {
+      showExtractedText(
+          context, fileBytes, shoppingList, addProduct, removeProduct);
+    }
+  }
+
+  ;
 
   showCupertinoModalPopup(
     context: context,
-    builder: (context) => CupertinoActionSheet(
+    builder: (ctx) => CupertinoActionSheet(
       actions: [
         CupertinoActionSheetAction(
           child: Text('Photo Gallery'),
           onPressed: () async {
             // close the options modal
-            Navigator.of(context).pop();
+            Navigator.of(ctx).pop();
             // get image from gallery
             fileBytes = await getImageBytesFromGallery();
-            if (fileBytes != null) {
-              showExtractedText(context, fileBytes!);
-            }
-            // submitFile(fileBytes);
+
+            showModal(fileBytes);
           },
         ),
         CupertinoActionSheetAction(
           child: Text('Camera'),
           onPressed: () async {
             // close the options modal
-            Navigator.of(context).pop();
+            Navigator.of(ctx).pop();
             // get image from camera
             fileBytes = await getImageBytesFromCamera();
-            if (fileBytes != null) {
-              showExtractedText(context, fileBytes!);
-            }
+            showModal(fileBytes);
           },
         ),
       ],
     ),
   );
-
-  // await picker.pickImage(source: source)
-  // showModalBottomSheet(
-  //   context: context,
-  //   isScrollControlled: true,
-  //   builder: (context) {
-  //     return SelectStore(
-  //       selected: selected,
-  //       onStoreSelected: onStoreSelected,
-  //     );
-  //   },
-  // );
 }
 
-class ExtractedTextScreen extends StatelessWidget {
+// TODO: do we need to make it stateful to properly dispose the textRecognizer?
+class ExtractedTextScreen extends StatefulWidget {
   final Uint8List imageBytes;
+  final ShoppingList shoppingList;
+  final Function(Product) addProduct;
+  final Function(Product) removeProduct;
 
-  const ExtractedTextScreen({super.key, required this.imageBytes});
+  ExtractedTextScreen(
+      {super.key,
+      required this.imageBytes,
+      required this.shoppingList,
+      required this.addProduct,
+      required this.removeProduct});
+
+  @override
+  State<ExtractedTextScreen> createState() => _ExtractedTextScreenState();
+}
+
+enum SearchResultsClass {
+  nonEmpty,
+  empty,
+}
+
+class _ExtractedTextScreenState extends State<ExtractedTextScreen> {
+  final TextRecognizer textRecognizer =
+      TextRecognizer(script: TextRecognitionScript.latin);
+
+  bool isLoading = false;
+
+  String extractedText = '';
+  Map<String, List<Product>> searchResults = {};
+
+  @override
+  void initState() {
+    super.initState();
+
+    extractText();
+  }
+
+  @override
+  void dispose() {
+    textRecognizer.close();
+    super.dispose();
+  }
+
+  File convertBytesToFile(Uint8List bytes) {
+    final tempDir = Directory.systemTemp;
+    final tempFile = File('${tempDir.path}/temp.png');
+    tempFile.writeAsBytesSync(bytes);
+    return tempFile;
+  }
+
+  // @override
+  Future<void> extractText() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final inputImage =
+        InputImage.fromFile(convertBytesToFile(widget.imageBytes));
+
+    final recognisedText = await textRecognizer.processImage(inputImage);
+
+    // final searchResults =
+    //     await bulkSearchProducts(multiLineQuery: recognisedText.text);
+
+    setState(() {
+      isLoading = false;
+      extractedText = recognisedText.text;
+      // this.searchResults = searchResults;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Text('Extracted Text Screen'),
-    );
+    return isLoading
+        ? Center(child: CircularProgressIndicator())
+        : BulkSearchResults(
+            searchText: extractedText,
+            shoppingList: widget.shoppingList,
+            addProduct: widget.addProduct,
+            removeProduct: widget.removeProduct);
   }
 }

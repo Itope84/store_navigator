@@ -87,10 +87,12 @@ class MapBottomNav extends StatelessWidget {
                           )),
                       Text(
                         'Shopping List',
-                        style:
-                            Theme.of(context).textTheme.labelMedium!.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelMedium!
+                            .copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black54),
                       )
                     ],
                   )

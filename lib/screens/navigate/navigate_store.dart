@@ -16,7 +16,9 @@ import 'package:store_navigator/utils/icons.dart';
 import 'package:store_navigator/utils/shelves.dart';
 
 List<GlobalKey> getAllShelfNodeClickables(List<ShelfNode> shelfNodes) {
-  return shelfNodes.expand((node) => node.itemKeys).toList();
+  return shelfNodes
+      .expand((node) => [...node.itemKeys, node.locateButtonKey])
+      .toList();
 }
 
 class NavigateStoreScreen extends StatefulWidget {
@@ -264,6 +266,9 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
                                               ? null
                                               : node;
                                     });
+                                  },
+                                  onLocateHere: (location) {
+                                    _getTravelingRoutes(location);
                                   },
                                 ),
                               ),

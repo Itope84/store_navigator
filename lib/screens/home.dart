@@ -37,13 +37,14 @@ class HomeScreen extends HookWidget {
         storesResp.state.status == QueryStatus.fetching;
 
     void editShoppingList(ShoppingList list) {
-      Navigator.of(context)
-          .push(
-            MaterialPageRoute(
-                builder: (context) =>
-                    ShoppingListScreen(id: list.id, store: list.store!)),
-          )
-          .then((_) => queryResponse.refetch());
+      Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (context) => ShoppingListScreen(
+                  id: list.id,
+                  store: list.store!,
+                  onPop: () => queryResponse.refetch(),
+                )),
+      );
     }
 
     return Scaffold(
@@ -89,11 +90,13 @@ class HomeScreen extends HookWidget {
                                   (storeSelectorContext, store) {
                                 Navigator.of(storeSelectorContext)
                                     .pushReplacement(
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              ShoppingListScreen(store: store)),
-                                    )
-                                    .then((_) => queryResponse.refetch());
+                                  MaterialPageRoute(
+                                      builder: (context) => ShoppingListScreen(
+                                            store: store,
+                                            onPop: () =>
+                                                queryResponse.refetch(),
+                                          )),
+                                );
                               })
                             }
                         : null,

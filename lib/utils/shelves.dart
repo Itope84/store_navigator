@@ -18,6 +18,7 @@ class ShelfNode {
   final List<ShoppingListItem> items;
 
   final List<GlobalKey> _itemKeys = [];
+  final GlobalKey locateButtonKey = GlobalKey();
 
   List<GlobalKey> get itemKeys => _itemKeys;
 
