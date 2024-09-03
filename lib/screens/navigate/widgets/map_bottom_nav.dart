@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:store_navigator/screens/home.dart';
+import 'package:store_navigator/screens/navigate/summary.dart';
+import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/utils/icons.dart';
 
 class MapBottomNav extends StatelessWidget {
+  final ShoppingList shoppingList;
   final bool isLocating;
   final void Function() onLocateClick;
   const MapBottomNav(
-      {super.key, this.isLocating = false, required this.onLocateClick});
+      {super.key,
+      this.isLocating = false,
+      required this.onLocateClick,
+      required this.shoppingList});
 
   @override
   Widget build(BuildContext context) {
@@ -103,9 +109,8 @@ class MapBottomNav extends StatelessWidget {
         ),
         FilledButton(
             onPressed: () {
-              Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (ctx) => const HomeScreen()),
-                  (_) => false);
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (ctx) => SummaryScreen(shoppingList: shoppingList)));
             },
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all(Colors.red),

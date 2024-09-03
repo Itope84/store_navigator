@@ -306,6 +306,7 @@ class _NavigateStoreScreenState extends State<NavigateStoreScreen> {
                     bottom: 16,
                     child: MapBottomNav(
                       isLocating: isLocating,
+                      shoppingList: widget.shoppingList,
                       onLocateClick: () {
                         setState(() {
                           isLocating = !isLocating;

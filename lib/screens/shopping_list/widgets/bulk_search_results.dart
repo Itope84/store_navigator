@@ -10,7 +10,7 @@ import 'package:store_navigator/widgets/product_card.dart';
 class BulkSearchResults extends StatefulWidget {
   final String searchText;
   final ShoppingList shoppingList;
-  final Function(Product) addProduct;
+  final Function(Product, {String userDefinedName}) addProduct;
   final Function(Product) removeProduct;
 
   const BulkSearchResults(
@@ -25,7 +25,8 @@ class BulkSearchResults extends StatefulWidget {
 }
 
 class _BulkSearchResultsState extends State<BulkSearchResults> {
-  Map<SearchResultsClass, Map<String, List<Product>>> groupSearchResults() {
+  Map<SearchResultsClass, Map<String, List<Product>>> groupSearchResults(
+      Map<String, List<Product>> searchResults) {
     return {
       SearchResultsClass.nonEmpty: Map.fromEntries(
           searchResults.entries.where((entry) => entry.value.isNotEmpty)),
@@ -35,18 +36,26 @@ class _BulkSearchResultsState extends State<BulkSearchResults> {
   }
 
   bool isLoading = false;
-  Map<String, List<Product>> searchResults = {};
+  Map<SearchResultsClass, Map<String, List<Product>>> groupedSearchResults = {
+    SearchResultsClass.nonEmpty: {},
+    SearchResultsClass.empty: {},
+  };
 
   Future<void> searchProducts(String text) async {
     setState(() {
       isLoading = true;
     });
 
+    widget.shoppingList.uploadedShoppingList = text;
+    widget.shoppingList.saveToDb();
+
     final searchResults = await bulkSearchProducts(multiLineQuery: text);
+
+    final grouped = groupSearchResults(searchResults);
 
     setState(() {
       isLoading = false;
-      this.searchResults = searchResults;
+      groupedSearchResults = grouped;
     });
   }
 
@@ -59,8 +68,6 @@ class _BulkSearchResultsState extends State<BulkSearchResults> {
 
   @override
   Widget build(BuildContext context) {
-    final groupedSearchResults = groupSearchResults();
-
     return Scaffold(
       appBar: BottomSheetAppBar(
         title: Text('Search Results'),
@@ -120,7 +127,8 @@ class _BulkSearchResultsState extends State<BulkSearchResults> {
                                         shoppingListItem: widget.shoppingList
                                             .findItem(entry.value[index]),
                                         onAddProduct: () {
-                                          widget.addProduct(entry.value[index]);
+                                          widget.addProduct(entry.value[index],
+                                              userDefinedName: entry.key);
                                         },
                                         onRemoveProduct: () {
                                           widget.removeProduct(

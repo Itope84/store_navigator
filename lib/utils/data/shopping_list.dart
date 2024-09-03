@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:collection/collection.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:store_navigator/utils/api/products.dart';
@@ -15,6 +17,8 @@ class ShoppingListItem {
   int qty;
   final String shoppingListId;
 
+  String? userGivenName;
+
   String get productId => product.id!;
 
   bool found = false;
@@ -25,6 +29,7 @@ class ShoppingListItem {
       this.sectionId,
       this.qty = 1,
       this.found = false,
+      this.userGivenName,
       required this.shoppingListId})
       : id = id ?? "${DateTime.now().millisecondsSinceEpoch}";
 
@@ -36,6 +41,7 @@ class ShoppingListItem {
       qty: json['qty'],
       found: json['found'] == 1,
       shoppingListId: json['shopping_list_id'],
+      userGivenName: json['user_given_name'],
     );
   }
 
@@ -48,6 +54,7 @@ class ShoppingListItem {
     data['section_id'] = sectionId;
     data['qty'] = qty;
     data['found'] = found ? 1 : 0;
+    data['user_given_name'] = userGivenName;
     return data;
   }
 
@@ -60,6 +67,7 @@ class ShoppingListItem {
       section_id TEXT,
       qty INTEGER,
       found INTEGER,
+      user_given_name TEXT,
       FOREIGN KEY (shopping_list_id) REFERENCES ${ShoppingList.tableName}(id) ON DELETE CASCADE
     )
   ''';
@@ -72,6 +80,8 @@ class ShoppingList {
   List<ShoppingListItem>? items;
   final DateTime? createdAt;
   DateTime? updatedAt;
+  // The list of items that were uploaded either via image or bulk search. This represents the user's shopping list that was imported into the app. The ones that were found in the store (during search) will also have been stored on the shopping list items (if one was selected) as userGivenName.
+  String? uploadedShoppingList;
 
   Store? store;
 
@@ -82,6 +92,7 @@ class ShoppingList {
       this.name,
       this.items,
       required this.storeId,
+      this.uploadedShoppingList,
       DateTime? createdAt,
       DateTime? updatedAt})
       : id = id ?? "${DateTime.now().millisecondsSinceEpoch}",
@@ -104,6 +115,7 @@ class ShoppingList {
               .map((i) => ShoppingListItem.fromJson(i))
               .toList()
           : null,
+      uploadedShoppingList: json['uploadedShoppingList'],
     );
   }
 
@@ -115,6 +127,7 @@ class ShoppingList {
     data['created_at'] = createdAt.toString();
     data['updated_at'] = updatedAt.toString();
     data['items'] = items?.map((i) => i.toJson()).toList();
+    data['uploadedShoppingList'] = uploadedShoppingList;
     return data;
   }
 
@@ -131,6 +144,7 @@ class ShoppingList {
       id TEXT PRIMARY KEY,
       name TEXT,
       store_id TEXT,
+      uploadedShoppingList TEXT,
       created_at TEXT,
       updated_at TEXT
     )
@@ -143,6 +157,7 @@ class ShoppingList {
       sli.product_id,
       sli.section_id,
       sli.found,
+      sli.user_given_name,
       sli.qty
     FROM
       ${ShoppingListItem.tableName} sli
@@ -193,6 +208,7 @@ class ShoppingList {
                   product: productsMap[e['product_id'] as String]!,
                   sectionId: e['section_id'] as String?,
                   qty: e['qty'] as int,
+                  userGivenName: e['user_given_name'] as String?,
                   found: e['found'] == 1,
                   shoppingListId: id));
             } else {
@@ -205,6 +221,7 @@ class ShoppingList {
                       product: productsMap[e['product_id'] as String]!,
                       sectionId: e['section_id'] as String?,
                       qty: e['qty'] as int,
+                      userGivenName: e['user_given_name'] as String?,
                       found: e['found'] == 1,
                       shoppingListId: id)
                 ];

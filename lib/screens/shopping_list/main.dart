@@ -65,15 +65,18 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
     });
   }
 
-  addProduct(Product product) {
+  addProduct(Product product, {String? userDefinedName}) {
     final item = shoppingList.findItem(product);
     setState(() {
       if (item != null) {
+        item.userGivenName = userDefinedName;
         item.qty++;
       } else {
         shoppingList.items ??= [];
         shoppingList.items!.add(ShoppingListItem(
-            product: product, shoppingListId: shoppingList.id));
+            product: product,
+            shoppingListId: shoppingList.id,
+            userGivenName: userDefinedName));
       }
     });
 

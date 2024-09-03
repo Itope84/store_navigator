@@ -39,7 +39,7 @@ void showExtractedText(
     BuildContext context,
     Uint8List imageBytes,
     ShoppingList shoppingList,
-    Function(Product) addProduct,
+    Function(Product, {String userDefinedName}) addProduct,
     Function(Product) removeProduct) {
   showModalBottomSheet(
     context: context,
@@ -54,8 +54,11 @@ void showExtractedText(
   );
 }
 
-Future<void> selectImage(BuildContext context, ShoppingList shoppingList,
-    Function(Product) addProduct, Function(Product) removeProduct) async {
+Future<void> selectImage(
+    BuildContext context,
+    ShoppingList shoppingList,
+    Function(Product, {String userDefinedName}) addProduct,
+    Function(Product) removeProduct) async {
   Uint8List? fileBytes;
 
   void showModal(Uint8List? fileBytes) {
@@ -101,7 +104,7 @@ Future<void> selectImage(BuildContext context, ShoppingList shoppingList,
 class ExtractedTextScreen extends StatefulWidget {
   final Uint8List imageBytes;
   final ShoppingList shoppingList;
-  final Function(Product) addProduct;
+  final Function(Product, {String userDefinedName}) addProduct;
   final Function(Product) removeProduct;
 
   ExtractedTextScreen(
@@ -160,13 +163,9 @@ class _ExtractedTextScreenState extends State<ExtractedTextScreen> {
 
     final recognisedText = await textRecognizer.processImage(inputImage);
 
-    // final searchResults =
-    //     await bulkSearchProducts(multiLineQuery: recognisedText.text);
-
     setState(() {
       isLoading = false;
       extractedText = recognisedText.text;
-      // this.searchResults = searchResults;
     });
   }
 
