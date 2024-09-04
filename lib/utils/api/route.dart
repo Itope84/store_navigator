@@ -31,14 +31,14 @@ class RoutePair {
 
 Future<List<dynamic>> fetchRouteBySectionId(String start, String end) async {
   final url =
-      Uri.parse('http://192.168.1.108:8000/get-route?start=$start&end=$end');
+      Uri.parse('https://api.storenav.uk/get-route?start=$start&end=$end');
   return await fetchRoute(url);
 }
 
 Future<List<RoutePair>> fetchRoutesBySectionIds(
     List<String> sectionIds, Offset? startLocation) async {
   final url = Uri.parse(
-      'http://192.168.1.108:8000/get-traveling-routes?start=${startLocation != null ? '${startLocation.dx.toInt()},${startLocation.dy.toInt()}' : ''}&section_ids=${sectionIds.join(',')}');
+      'https://api.storenav.uk/get-traveling-routes?start=${startLocation != null ? '${startLocation.dx.toInt()},${startLocation.dy.toInt()}' : ''}&section_ids=${sectionIds.join(',')}');
   final routes = await fetchRoute(url);
   return routes.map((route) => RoutePair.fromJson(route)).toList();
 }
@@ -48,7 +48,7 @@ Future<List<dynamic>> fetchRouteByPos(Offset start, Offset end) async {
   String endStr = '${end.dx.toInt()},${end.dy.toInt()}';
 
   final url = Uri.parse(
-      'http://192.168.1.108:8000/get-route?start=$startStr&end=$endStr');
+      'https://api.storenav.uk/get-route?start=$startStr&end=$endStr');
   return await fetchRoute(url);
 }
 

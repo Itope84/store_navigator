@@ -36,7 +36,7 @@ class ProductWithShelf {
 Future<List<ProductWithShelf>> getShoppingListProductsWithShelves(
     String storeId, List<String> productIds) async {
   final url = Uri.parse(
-      "http://192.168.1.108:8000/stores/$storeId/product-shelves?products=${productIds.join(',')}");
+      "https://api.storenav.uk/stores/$storeId/product-shelves?products=${productIds.join(',')}");
 
   try {
     final response = await get(url);

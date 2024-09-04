@@ -5,7 +5,7 @@ import 'package:http/http.dart';
 import 'package:store_navigator/utils/data/store.dart';
 
 Future<List<Store>> fetchStores() async {
-  final url = Uri.parse('http://192.168.1.108:8000/stores');
+  final url = Uri.parse('https://api.storenav.uk/stores');
   try {
     final response = await get(url);
     if (response.statusCode == 200) {
