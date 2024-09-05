@@ -39,7 +39,7 @@ class SummaryScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(entry.key,
                       style: Theme.of(context).textTheme.titleLarge),
                 ),
@@ -58,7 +58,7 @@ class SummaryScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
               ],
             );
           },
@@ -67,7 +67,7 @@ class SummaryScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        title: Text('Summary'),
+        title: const Text('Summary'),
       ),
       // TODO: don't use listtile, also group items that have the same userGivenName
       body: SingleChildScrollView(
@@ -75,7 +75,7 @@ class SummaryScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -102,29 +102,29 @@ class SummaryScreen extends StatelessWidget {
                       textStyle:
                           WidgetStatePropertyAll(TextStyle(fontSize: 16)),
                     ),
-                    child: Text("Copy to clipboard"),
+                    child: const Text("Copy to clipboard"),
                   )
                 ],
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text("You've Found",
                   style: Theme.of(context).textTheme.headlineSmall),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ...formatShoppingListItems(foundItems),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text("You haven't bought",
                   style: Theme.of(context).textTheme.headlineSmall),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ...formatShoppingListItems(unfoundShoppingListItems),
             ...otherUnfoundItems.map(
               (item) => Padding(
-                padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
+                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
                 child:
                     Text(item, style: Theme.of(context).textTheme.titleLarge),
               ),
@@ -133,7 +133,7 @@ class SummaryScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     child: FilledButton(
                         onPressed: () {
                           Navigator.of(context).pushAndRemoveUntil(
@@ -141,12 +141,12 @@ class SummaryScreen extends StatelessWidget {
                                   builder: (ctx) => const HomeScreen()),
                               (_) => false);
                         },
-                        child: Text("Done")),
+                        child: const Text("Done")),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 32),
+            const SizedBox(height: 32),
           ],
         ),
       ),

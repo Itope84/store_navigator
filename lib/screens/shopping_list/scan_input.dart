@@ -6,10 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:store_navigator/screens/shopping_list/widgets/bulk_search_results.dart';
-import 'package:store_navigator/utils/api/products.dart';
 import 'package:store_navigator/utils/data/product.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
-import 'package:store_navigator/widgets/bottom_sheet_appbar.dart';
 
 Future<Uint8List?> getImageBytesFromGallery() async {
   final pickedFile = await ImagePicker().pickImage(
@@ -68,14 +66,13 @@ Future<void> selectImage(
     }
   }
 
-  ;
 
   showCupertinoModalPopup(
     context: context,
     builder: (ctx) => CupertinoActionSheet(
       actions: [
         CupertinoActionSheetAction(
-          child: Text('Photo Gallery'),
+          child: const Text('Photo Gallery'),
           onPressed: () async {
             // close the options modal
             Navigator.of(ctx).pop();
@@ -86,7 +83,7 @@ Future<void> selectImage(
           },
         ),
         CupertinoActionSheetAction(
-          child: Text('Camera'),
+          child: const Text('Camera'),
           onPressed: () async {
             // close the options modal
             Navigator.of(ctx).pop();
@@ -107,7 +104,7 @@ class ExtractedTextScreen extends StatefulWidget {
   final Function(Product, {String userDefinedName}) addProduct;
   final Function(Product) removeProduct;
 
-  ExtractedTextScreen(
+  const ExtractedTextScreen(
       {super.key,
       required this.imageBytes,
       required this.shoppingList,
@@ -172,7 +169,7 @@ class _ExtractedTextScreenState extends State<ExtractedTextScreen> {
   @override
   Widget build(BuildContext context) {
     return isLoading
-        ? Center(child: CircularProgressIndicator())
+        ? const Center(child: CircularProgressIndicator())
         : BulkSearchResults(
             searchText: extractedText,
             shoppingList: widget.shoppingList,

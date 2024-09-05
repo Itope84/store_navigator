@@ -39,7 +39,7 @@ Future<Map<String, List<Product>>> bulkSearchProducts(
       final Map<String, dynamic> data = jsonDecode(response.body);
 
       return data.map((key, value) => MapEntry(
-          "$key",
+          key,
           (value as List)
               .map<Product>((product) => Product.fromJson(product))
               .toList()));

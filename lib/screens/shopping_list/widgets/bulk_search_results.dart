@@ -70,7 +70,7 @@ class _BulkSearchResultsState extends State<BulkSearchResults> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: BottomSheetAppBar(
-        title: Text('Search Results'),
+        title: const Text('Search Results'),
         onPop: () {
           Navigator.of(context).pop();
         },
@@ -109,7 +109,7 @@ class _BulkSearchResultsState extends State<BulkSearchResults> {
                               ],
                             ),
                             const SizedBox(height: 6),
-                            entry.value.length > 0
+                            entry.value.isNotEmpty
                                 ? GridView.builder(
                                     gridDelegate:
                                         const SliverGridDelegateWithFixedCrossAxisCount(
@@ -144,7 +144,7 @@ class _BulkSearchResultsState extends State<BulkSearchResults> {
                       },
                     ),
 
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
                     if (groupedSearchResults[SearchResultsClass.empty]!
                         .isNotEmpty) ...[
@@ -155,8 +155,8 @@ class _BulkSearchResultsState extends State<BulkSearchResults> {
                             .headlineSmall!
                             .copyWith(fontWeight: FontWeight.w900),
                       ),
-                      Text("You can edit them and try again"),
-                      SizedBox(height: 12),
+                      const Text("You can edit them and try again"),
+                      const SizedBox(height: 12),
                       Row(children: [
                         Expanded(
                           child: Container(),

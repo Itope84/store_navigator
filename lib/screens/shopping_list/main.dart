@@ -221,7 +221,7 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                         },
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Row(
                       children: [
                         Padding(

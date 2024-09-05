@@ -157,7 +157,7 @@ class HomeScreen extends HookWidget {
                                 style: Theme.of(context).textTheme.titleLarge),
                           const SizedBox(height: 10),
 
-                          Container(
+                          SizedBox(
                             height: 160,
                             child: ListView.builder(
                               itemCount: completedShoppingLists.length,

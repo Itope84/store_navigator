@@ -55,7 +55,7 @@ class BasketIcon extends StatelessWidget {
                                 shelfNode.shelf.name!,
                                 style: Theme.of(context).textTheme.labelMedium,
                               ),
-                              Divider(),
+                              const Divider(),
                               ...shelfNode.items.map(
                                 (item) => InkWell(
                                   key: shelfNode.getItemKey(item),
@@ -127,7 +127,7 @@ class BasketIcon extends StatelessWidget {
                         shelfNode.allItemsFound ? Colors.green : Colors.white),
                 padding: const EdgeInsets.all(1),
                 child: shelfNode.allItemsFound
-                    ? Icon(
+                    ? const Icon(
                         Icons.check,
                         color: Colors.white,
                       )
