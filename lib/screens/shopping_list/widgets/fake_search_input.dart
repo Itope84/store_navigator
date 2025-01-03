@@ -22,7 +22,7 @@ class ShoppingListFakeSearch extends StatelessWidget {
             const Icon(Icons.search),
             const SizedBox(width: 12),
             // TODO: placeholder search
-            const Expanded(child: Text('Search products')),
+            const Expanded(child: Text('Search or click the scan button')),
             SizedBox(
               width: 36.0,
               height: 36.0,

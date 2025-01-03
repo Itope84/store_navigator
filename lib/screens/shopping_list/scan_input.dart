@@ -66,7 +66,6 @@ Future<void> selectImage(
     }
   }
 
-
   showCupertinoModalPopup(
     context: context,
     builder: (ctx) => CupertinoActionSheet(

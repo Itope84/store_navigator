@@ -1,4 +1,3 @@
-
 import 'package:collection/collection.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:store_navigator/utils/api/products.dart';
@@ -30,7 +29,7 @@ class ShoppingListItem {
       this.found = false,
       this.userGivenName,
       required this.shoppingListId})
-      : id = id ?? "${DateTime.now().millisecondsSinceEpoch}";
+      : id = id ?? "${DateTime.now().millisecondsSinceEpoch}-${product.id}";
 
   factory ShoppingListItem.fromJson(Map<String, dynamic> json) {
     return ShoppingListItem(

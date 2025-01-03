@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:store_navigator/screens/shopping_list/scan_input.dart';
 import 'package:store_navigator/utils/api/products.dart';
 import 'package:store_navigator/utils/data/product.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
@@ -8,7 +9,7 @@ import 'package:store_navigator/widgets/text_input.dart';
 class ProductSearch extends StatefulWidget {
   final String storeId;
   final ShoppingList shoppingList;
-  final Function(Product) addProduct;
+  final Function(Product, {String? userDefinedName}) addProduct;
   final Function(Product) removeProduct;
 
   const ProductSearch(
@@ -69,10 +70,38 @@ class _ProductSearchState extends State<ProductSearch> {
       // TODO: fetch and display categories for the empty query state to make searching easier
       // TODO: empty query state
       body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+        padding: const EdgeInsets.only(left: 24, right: 24, bottom: 48),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                TextButton(
+                  style: ButtonStyle(
+                    // fixedSize:
+                    //     WidgetStatePropertyAll(Size.fromWidth(90)),
+                    // padding: WidgetStatePropertyAll(
+                    //   EdgeInsets.symmetric(horizontal: 4),
+                    // ),
+                    visualDensity: VisualDensity.compact,
+                    textStyle: WidgetStatePropertyAll(TextStyle(
+                        color: Theme.of(context).primaryColor, fontSize: 16)),
+                  ),
+                  child: const Text("Or scan shopping list or receipt"),
+                  onPressed: () {
+                    selectImage(
+                      context,
+                      widget.shoppingList,
+                      widget.addProduct,
+                      widget.removeProduct,
+                    );
+                  },
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 24,
+            ),
             // TODO: the scan to input pill
             if (search.isNotEmpty)
               Text(

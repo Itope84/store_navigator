@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/widgets/product_qty.dart';
@@ -16,7 +17,29 @@ class ShoppingListItemTile extends StatelessWidget {
         onTap: () {
           print('tapped the whole thing');
         },
-        leading: const SizedBox(width: 48, height: 48, child: Placeholder()),
+        leading: SizedBox(
+          width: 48,
+          height: 48,
+          child: CachedNetworkImage(
+            imageUrl: item.product.image ?? '',
+            errorWidget: (ctx, exc, obj) {
+              // TODO: placeholder image
+              return const Placeholder();
+            },
+            placeholder: (ctx, _) {
+              return const Center(
+                child: SizedBox(
+                  height: 25,
+                  width: 25,
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            },
+            memCacheHeight: 80,
+            memCacheWidth: 80,
+            fadeInDuration: const Duration(milliseconds: 300),
+          ),
+        ),
         title: Text(
           item.product.name!,
           overflow: TextOverflow.ellipsis,

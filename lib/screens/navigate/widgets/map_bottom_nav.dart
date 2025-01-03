@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:store_navigator/screens/navigate/summary.dart';
+import 'package:store_navigator/screens/shopping_list/main.dart';
 import 'package:store_navigator/utils/data/shopping_list.dart';
 import 'package:store_navigator/utils/icons.dart';
 
@@ -35,7 +36,6 @@ class MapBottomNav extends StatelessWidget {
                 children: [
                   InkWell(
                     onTap: () {
-                      print("Tapping onlocate");
                       onLocateClick();
                       if (!isLocating) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -77,30 +77,42 @@ class MapBottomNav extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Column(
-                    children: [
-                      Card(
-                          elevation: 0,
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => ShoppingListScreen(
+                            id: shoppingList.id,
+                            store: shoppingList.store!,
                           ),
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            child: CustomIcons.list(
-                                size: 24, color: Colors.black87),
-                          )),
-                      Text(
-                        'Shopping List',
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelMedium!
-                            .copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black54),
-                      )
-                    ],
-                  )
+                        ),
+                      );
+                    },
+                    child: Column(
+                      children: [
+                        Card(
+                            elevation: 0,
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              child: CustomIcons.list(
+                                  size: 24, color: Colors.black87),
+                            )),
+                        Text(
+                          'Shopping List',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelMedium!
+                              .copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54),
+                        )
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

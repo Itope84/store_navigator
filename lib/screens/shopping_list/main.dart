@@ -280,18 +280,77 @@ class _ShoppingListScreenState extends State<ShoppingListScreen> {
                             )),
                             const SizedBox(height: 18),
                             Padding(
-                              padding: padding,
-                              child: OutlinedButton(
-                                onPressed: () {
-                                  print(shoppingList.store);
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (ctx) => NavigateStoreScreen(
-                                            shoppingList: shoppingList,
-                                          )));
-                                },
-                                child: const Text('Navigate'),
-                              ),
-                            ),
+                                padding: padding,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton(
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (ctx) =>
+                                                      NavigateStoreScreen(
+                                                        shoppingList:
+                                                            shoppingList,
+                                                      )));
+                                        },
+                                        child: const Text('Navigate'),
+                                      ),
+                                    ),
+                                    if (shoppingList.isCompleted) ...[
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () async {
+                                            ShoppingList newShoppingList =
+                                                ShoppingList(
+                                                    storeId:
+                                                        shoppingList.storeId,
+                                                    name: shoppingList.name);
+
+                                            newShoppingList.items = shoppingList
+                                                        .items !=
+                                                    null
+                                                ? shoppingList.items!
+                                                    .map((i) =>
+                                                        ShoppingListItem(
+                                                          product: i.product,
+                                                          sectionId:
+                                                              i.sectionId,
+                                                          qty: i.qty,
+                                                          shoppingListId:
+                                                              newShoppingList
+                                                                  .id,
+                                                          userGivenName:
+                                                              i.userGivenName,
+                                                        ))
+                                                    .toList()
+                                                : [];
+
+                                            ShoppingList _shoppingList =
+                                                ShoppingList.fromJson(
+                                                    newShoppingList.toJson());
+
+                                            // save
+                                            await _shoppingList.saveToDb();
+
+                                            Navigator.of(context)
+                                                .pushReplacement(
+                                              MaterialPageRoute(
+                                                builder: (ctx) =>
+                                                    ShoppingListScreen(
+                                                  store: _store,
+                                                  id: _shoppingList.id,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: const Text('Duplicate'),
+                                        ),
+                                      ),
+                                    ]
+                                  ],
+                                )),
                             Padding(
                               padding: padding,
                               child: FilledButton(
